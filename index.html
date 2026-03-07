@@ -8,11 +8,8 @@
 <meta name="theme-color" content="#0d1b4b"/>
 <title>Adhari Pharmaceuticals</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Firebase MUST load first -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans','Segoe UI',sans-serif;background:#f0f4ff;min-height:100vh}
@@ -33,11 +30,13 @@ input,select,textarea,button{font-family:inherit}
 .box{background:#fff;border-radius:18px;border:1.5px solid #dbeafe;padding:22px;box-shadow:0 4px 20px rgba(26,58,143,0.1)}
 .sec{background:#f8faff;border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #dbeafe}
 .sec2{background:#f0f7ff;border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #bfdbfe}
+.sec3{background:#f0fff4;border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #bbf7d0}
 .stl{font-weight:800;color:#0d1b4b;font-size:11px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
 .inp{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #bfdbfe;font-size:14px;outline:none;background:#fff;font-family:inherit}
 .inp:focus{border-color:#1a3a8f}
 .lbl{font-size:11px;color:#1e40af;font-weight:700;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .th{background:#0d1b4b;color:#fff;padding:9px 16px;font-weight:800;font-size:12px}
 .tw{border-radius:12px;overflow:hidden;border:1.5px solid #bfdbfe;margin-bottom:14px}
 table{width:100%;border-collapse:collapse}
@@ -54,22 +53,31 @@ tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}
 .bi{width:58px;padding:4px 6px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:12px;outline:none}
 .empty{text-align:center;padding:50px 0;color:#aaa}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:12px}
-.mod{background:#fff;border-radius:18px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.mod{background:#fff;border-radius:18px;width:100%;max-width:720px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .mhd{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);padding:16px 20px;border-radius:18px 18px 0 0;display:flex;justify-content:space-between;align-items:center}
 .mbd{padding:20px}
 .tr{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
 .tg{display:flex;justify-content:space-between;background:#0d1b4b;color:#fff;border-radius:8px;padding:10px 14px;font-size:15px;font-weight:800;margin-top:6px}
-/* Loading */
+.gst-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid;transition:all .15s}
+.gst-on{background:#0d1b4b;color:#fff;border-color:#0d1b4b}
+.gst-off{background:#fff;color:#1e40af;border-color:#bfdbfe}
+.tab-btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid;margin-right:6px;margin-bottom:6px}
+.tab-on{background:#0d1b4b;color:#fff;border-color:#0d1b4b}
+.tab-off{background:#fff;color:#555;border-color:#ddd}
 .load{position:fixed;inset:0;background:linear-gradient(135deg,#0d1b4b,#1a3a8f);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#fff}
 .load img{height:80px;margin-bottom:20px}
 .load h2{font-size:20px;font-weight:800;margin-bottom:8px}
 .load p{font-size:13px;color:#93c5fd;margin-bottom:20px}
 .spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-/* Toast */
 .toast{position:fixed;bottom:24px;right:20px;background:#22c55e;color:#fff;border-radius:12px;padding:10px 18px;font-size:13px;font-weight:800;box-shadow:0 4px 20px rgba(34,197,94,.4);z-index:9999;display:none;transition:opacity .4s}
+.type-toggle{display:flex;gap:8px;margin-bottom:14px;background:#f0f4ff;padding:8px;border-radius:12px}
+.type-btn{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid transparent;text-align:center}
+.type-btn.on{background:#0d1b4b;color:#fff}
+.type-btn.off{background:#fff;color:#555;border-color:#ddd}
 @media(max-width:600px){
   .g2{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr}
   .hdr-in{flex-direction:column;align-items:flex-start}
   .nav{width:100%}
   .nb{flex:1;text-align:center;font-size:11px;padding:6px 4px}
@@ -89,83 +97,78 @@ tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== CONFIG =====
-const FB = {
-  apiKey: "AIzaSyAglTb86fE2Uh_lY_85xxPB6Tt1rI0Kovg",
-  authDomain: "adhari-orders.firebaseapp.com",
-  projectId: "adhari-orders",
-  storageBucket: "adhari-orders.firebasestorage.app",
-  messagingSenderId: "723443525155",
-  appId: "1:723443525155:web:1d3d237b04fb2aa7a43396"
+const FB={apiKey:"AIzaSyAglTb86fE2Uh_lY_85xxPB6Tt1rI0Kovg",authDomain:"adhari-orders.firebaseapp.com",projectId:"adhari-orders",storageBucket:"adhari-orders.firebasestorage.app",messagingSenderId:"723443525155",appId:"1:723443525155:web:1d3d237b04fb2aa7a43396"};
+const CO={name:"Adhari Pharmaceuticals Private Limited",short:"Adhari Pharmaceuticals Pvt. Ltd.",a1:"SHOP-19 GR FLR, C WING SAI SADAN CHS LTD, RSC-14 MHADA COMPLEX,",a2:"MALWANI GATE NO. 8 MALAD(WEST), MUMBAI - 400095",ph:"8976251529",em:"adharipharmaceuticals@gmail.com",gs:"27ABECA4130D1Z7",dr:"MH-MZ6-625386 & MH-MZ6-625385",tg:"Quality Medicine. Trusted Care."};
+const LOGO="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";
+
+// GST rates for different medicine categories (India)
+const GST_RATES = {
+  "General": 12,
+  "Antibiotic": 12,
+  "Antiviral": 12,
+  "Allergy": 12,
+  "GI": 12,
+  "Cardiac": 12,
+  "Diabetes": 12,
+  "Supplement": 18,
+  "Ayurvedic": 0,
+  "Other": 12
 };
 
-const CO = {
-  name:"Adhari Pharmaceuticals Private Limited",
-  short:"Adhari Pharmaceuticals Pvt. Ltd.",
-  a1:"SHOP-19 GR FLR, C WING SAI SADAN CHS LTD, RSC-14 MHADA COMPLEX,",
-  a2:"MALWANI GATE NO. 8 MALAD(WEST), MUMBAI - 400095",
-  ph:"8976251529", em:"adharipharmaceuticals@gmail.com",
-  gs:"27ABECA4130D1Z7", dr:"MH-MZ6-625386 & MH-MZ6-625385",
-  tg:"Quality Medicine. Trusted Care."
-};
-
-const LOGO = "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";
-
-const PRODS = [
-  {name:"Paracetamol 500mg Tab",pack:"10x10",mrp:"22",cat:"General"},
-  {name:"Dolo 650 Tab",pack:"15x10",mrp:"30",cat:"General"},
-  {name:"Amoxicillin 500mg Cap",pack:"10x10",mrp:"85",cat:"Antibiotic"},
-  {name:"Azithromycin 500mg Tab",pack:"3x10",mrp:"110",cat:"Antibiotic"},
-  {name:"Cetirizine 10mg Tab",pack:"10x10",mrp:"18",cat:"Allergy"},
-  {name:"Pantoprazole 40mg Tab",pack:"10x10",mrp:"65",cat:"GI"},
-  {name:"Omeprazole 20mg Cap",pack:"10x10",mrp:"55",cat:"GI"},
-  {name:"Metformin 500mg Tab",pack:"10x10",mrp:"45",cat:"Diabetes"},
-  {name:"Atorvastatin 10mg Tab",pack:"10x10",mrp:"90",cat:"Cardiac"},
-  {name:"Losartan 50mg Tab",pack:"10x10",mrp:"75",cat:"Cardiac"},
-  {name:"Vitamin D3 60K Cap",pack:"4x1",mrp:"38",cat:"Supplement"},
-  {name:"Cough Syrup 100ml",pack:"1x1",mrp:"55",cat:"General"},
-  {name:"Acyclovir 400mg Tab",pack:"10x10",mrp:"95",cat:"Antiviral"},
-  {name:"Acyclovir 800mg Tab",pack:"10x10",mrp:"145",cat:"Antiviral"},
-  {name:"Valacyclovir 500mg Tab",pack:"3x10",mrp:"320",cat:"Antiviral"},
-  {name:"Valacyclovir 1000mg Tab",pack:"3x10",mrp:"540",cat:"Antiviral"},
-  {name:"Oseltamivir 75mg Cap",pack:"10x1",mrp:"480",cat:"Antiviral"},
-  {name:"Famciclovir 250mg Tab",pack:"3x10",mrp:"280",cat:"Antiviral"},
-  {name:"Favipiravir 200mg Tab",pack:"10x10",mrp:"75",cat:"Antiviral"},
-  {name:"Molnupiravir 200mg Cap",pack:"10x4",mrp:"950",cat:"Antiviral"},
-  {name:"Remdesivir 100mg Inj",pack:"1 Vial",mrp:"1200",cat:"Antiviral"},
-  {name:"Ribavirin 200mg Cap",pack:"10x10",mrp:"210",cat:"Antiviral"},
-  {name:"Sofosbuvir 400mg Tab",pack:"28x1",mrp:"3800",cat:"Antiviral"}
+const PRODS=[
+  {name:"Paracetamol 500mg Tab",pack:"10x10",mrp:"22",cat:"General",gst:5},
+  {name:"Dolo 650 Tab",pack:"15x10",mrp:"30",cat:"General",gst:5},
+  {name:"Amoxicillin 500mg Cap",pack:"10x10",mrp:"85",cat:"Antibiotic",gst:12},
+  {name:"Azithromycin 500mg Tab",pack:"3x10",mrp:"110",cat:"Antibiotic",gst:12},
+  {name:"Cetirizine 10mg Tab",pack:"10x10",mrp:"18",cat:"Allergy",gst:12},
+  {name:"Pantoprazole 40mg Tab",pack:"10x10",mrp:"65",cat:"GI",gst:12},
+  {name:"Omeprazole 20mg Cap",pack:"10x10",mrp:"55",cat:"GI",gst:12},
+  {name:"Metformin 500mg Tab",pack:"10x10",mrp:"45",cat:"Diabetes",gst:5},
+  {name:"Atorvastatin 10mg Tab",pack:"10x10",mrp:"90",cat:"Cardiac",gst:12},
+  {name:"Losartan 50mg Tab",pack:"10x10",mrp:"75",cat:"Cardiac",gst:12},
+  {name:"Vitamin D3 60K Cap",pack:"4x1",mrp:"38",cat:"Supplement",gst:18},
+  {name:"Cough Syrup 100ml",pack:"1x1",mrp:"55",cat:"General",gst:12},
+  {name:"Acyclovir 400mg Tab",pack:"10x10",mrp:"95",cat:"Antiviral",gst:12},
+  {name:"Acyclovir 800mg Tab",pack:"10x10",mrp:"145",cat:"Antiviral",gst:12},
+  {name:"Valacyclovir 500mg Tab",pack:"3x10",mrp:"320",cat:"Antiviral",gst:12},
+  {name:"Valacyclovir 1000mg Tab",pack:"3x10",mrp:"540",cat:"Antiviral",gst:12},
+  {name:"Oseltamivir 75mg Cap",pack:"10x1",mrp:"480",cat:"Antiviral",gst:12},
+  {name:"Famciclovir 250mg Tab",pack:"3x10",mrp:"280",cat:"Antiviral",gst:12},
+  {name:"Favipiravir 200mg Tab",pack:"10x10",mrp:"75",cat:"Antiviral",gst:12},
+  {name:"Molnupiravir 200mg Cap",pack:"10x4",mrp:"950",cat:"Antiviral",gst:12},
+  {name:"Remdesivir 100mg Inj",pack:"1 Vial",mrp:"1200",cat:"Antiviral",gst:5},
+  {name:"Ribavirin 200mg Cap",pack:"10x10",mrp:"210",cat:"Antiviral",gst:12},
+  {name:"Sofosbuvir 400mg Tab",pack:"28x1",mrp:"3800",cat:"Antiviral",gst:12}
 ];
 
-const ST = {
-  Pending:{bg:"#fff8e1",cl:"#f57c00",bd:"#ffd54f"},
-  Processing:{bg:"#e3f2fd",cl:"#1565c0",bd:"#90caf9"},
-  Delivered:{bg:"#e8f5e9",cl:"#2e7d32",bd:"#a5d6a7"},
-  Cancelled:{bg:"#fce4ec",cl:"#c62828",bd:"#ef9a9a"}
-};
-const CATS = ["All","Antiviral","Antibiotic","General","GI","Cardiac","Diabetes","Allergy","Supplement","Other"];
+const ST={Pending:{bg:"#fff8e1",cl:"#f57c00",bd:"#ffd54f"},Processing:{bg:"#e3f2fd",cl:"#1565c0",bd:"#90caf9"},Delivered:{bg:"#e8f5e9",cl:"#2e7d32",bd:"#a5d6a7"},Cancelled:{bg:"#fce4ec",cl:"#c62828",bd:"#ef9a9a"}};
+const CATS=["All","Antiviral","Antibiotic","General","GI","Cardiac","Diabetes","Allergy","Supplement","Ayurvedic","Other"];
+const GST_OPTS=[0,5,12,18,28];
 
-// ===== INIT FIREBASE =====
-let db;
-try {
-  if (!firebase.apps.length) firebase.initializeApp(FB);
-  db = firebase.firestore();
-} catch(e) {
-  document.getElementById("ld-msg").textContent = "Firebase failed: " + e.message;
-}
+if(!firebase.apps.length) firebase.initializeApp(FB);
+const db=firebase.firestore();
 
-// ===== STATE =====
-function bf(){return{doctorName:"",clinicName:"",phone:"",email:"",address:"",area:"",city:"",pincode:"",visitDate:td(),status:"Pending",notes:"",products:[]};}
+function bf(){return{
+  // Customer type: "doctor" or "store" or "both"
+  custType:"doctor",
+  // Doctor fields
+  doctorName:"",clinicName:"",phone:"",email:"",address:"",area:"",city:"",pincode:"",visitDate:td(),
+  // Store fields
+  storeName:"",storeContact:"",storeAddress:"",storeGstin:"",
+  status:"Pending",notes:"",products:[]
+};}
 function td(){return new Date().toISOString().slice(0,10);}
 function fdt(d){try{return new Date(d).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});}catch(e){return d;}}
-function sub(ps){return ps.reduce((s,p)=>s+parseFloat(p.mrp||0)*parseInt(p.qty||1),0);}
+function subAmt(ps){return ps.reduce((s,p)=>s+parseFloat(p.mrp||0)*parseInt(p.qty||1),0);}
 
-let S = {
-  view:"list", orders:[], catalog:[],
-  search:"", editId:null, detail:null,
-  form:bf(), pSearch:"", pCat:"All",
-  newP:{name:"",pack:"",mrp:"",cat:"General"}, catSearch:"", catErr:"",
-  inv:false, invOrd:null, invNo:"", invDate:td(),
+let S={
+  view:"list",orders:[],catalog:[],
+  search:"",editId:null,detail:null,
+  form:bf(),pSearch:"",pCat:"All",
+  newP:{name:"",pack:"",mrp:"",cat:"General",gst:12},
+  catSearch:"",catErr:"",
+  inv:false,invOrd:null,invNo:"",invDate:td(),
+  gstType:"cgst", // cgst | igst
   live:false
 };
 
@@ -173,10 +176,11 @@ function set(p){Object.assign(S,p);render();}
 function sf(k,v){S.form[k]=v;}
 function snp(k,v){S.newP[k]=v;}
 
-// ===== TOAST =====
-function toast(msg){
+function toast(msg,clr){
   const t=document.getElementById("toast");
-  t.textContent=msg; t.style.display="block"; t.style.opacity="1";
+  t.textContent=msg;
+  t.style.background=clr||"#22c55e";
+  t.style.display="block";t.style.opacity="1";
   clearTimeout(window._tt);
   window._tt=setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.style.display="none",400);},2500);
 }
@@ -184,16 +188,61 @@ function toast(msg){
 // ===== HELPERS =====
 function ctag(c){
   if(!c)return"";
-  const av=c==="Antiviral";
-  return`<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:${av?"#fef3c7":"#eff6ff"};color:${av?"#92400e":"#1e40af"};border:1px solid ${av?"#fcd34d":"#bfdbfe"}">${av?"🦠 ":""}${c}</span>`;
+  const av=c==="Antiviral",ay=c==="Ayurvedic";
+  const bg=av?"#fef3c7":ay?"#f0fdf4":"#eff6ff";
+  const cl=av?"#92400e":ay?"#166534":"#1e40af";
+  const bd=av?"#fcd34d":ay?"#86efac":"#bfdbfe";
+  const ic=av?"🦠 ":ay?"🌿 ":"";
+  return`<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:${bg};color:${cl};border:1px solid ${bd}">${ic}${c}</span>`;
 }
-function sbadge(s){
-  const t=ST[s]||ST.Pending;
-  return`<span style="background:${t.bg};color:${t.cl};border:1.5px solid ${t.bd};border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700">${s}</span>`;
-}
+function sbadge(s){const t=ST[s]||ST.Pending;return`<span style="background:${t.bg};color:${t.cl};border:1.5px solid ${t.bd};border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700">${s}</span>`;}
 function ptag(p){
-  const av=p.cat==="Antiviral";
-  return`<span style="background:${av?"#fef3c7":"#eff6ff"};color:${av?"#92400e":"#1e40af"};border:1px solid ${av?"#fcd34d":"#bfdbfe"};border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600">${p.name} ×${p.qty}</span>`;
+  const av=p.cat==="Antiviral",ay=p.cat==="Ayurvedic";
+  const bg=av?"#fef3c7":ay?"#f0fdf4":"#eff6ff";
+  const cl=av?"#92400e":ay?"#166534":"#1e40af";
+  const bd=av?"#fcd34d":ay?"#86efac":"#bfdbfe";
+  return`<span style="background:${bg};color:${cl};border:1px solid ${bd};border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600">${p.name} ×${p.qty}</span>`;
+}
+
+// Get bill-to name for display
+function billName(o){
+  if(o.custType==="store") return o.storeName||"Medical Store";
+  if(o.custType==="both") return `Dr. ${o.doctorName} / ${o.storeName||"Store"}`;
+  return `Dr. ${o.doctorName}`;
+}
+
+// ===== GST CALCULATION =====
+function calcGST(products, gstType) {
+  // Group by GST rate
+  const groups = {};
+  products.forEach(p => {
+    const rate = parseFloat(p.gst||12);
+    const amt = parseFloat(p.mrp||0) * parseInt(p.qty||1);
+    if(!groups[rate]) groups[rate] = 0;
+    groups[rate] += amt;
+  });
+
+  const rows = [];
+  let totalTax = 0;
+  let totalBase = 0;
+
+  Object.entries(groups).forEach(([rate, amt]) => {
+    const r = parseFloat(rate);
+    const base = amt / (1 + r/100); // exclusive base
+    const tax = amt - base;
+    totalTax += tax;
+    totalBase += base;
+    if(r === 0) {
+      rows.push({rate:r, base, tax:0, label:"Exempt"});
+    } else if(gstType === "igst") {
+      rows.push({rate:r, base, tax, label:`IGST ${r}%`});
+    } else {
+      rows.push({rate:r, base, tax:tax/2, label:`CGST ${r/2}%`});
+      rows.push({rate:r, base, tax:tax/2, label:`SGST ${r/2}%`});
+    }
+  });
+
+  return {rows, totalBase, totalTax, grand: totalBase + totalTax};
 }
 
 // ===== PDF =====
@@ -201,13 +250,56 @@ function pp(html){const w=window.open("","_blank","width=900,height=700");w.docu
 
 function oHTML(o){
   const rows=o.products.map((p,i)=>`<tr><td>${i+1}</td><td><b>${p.name}</b></td><td>${p.cat||"—"}</td><td>${p.pack||"—"}</td><td>${p.mrp?"₹"+p.mrp:"—"}</td><td><b>${p.qty}</b></td><td>${p.bonus||"—"}</td></tr>`).join("");
-  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>Dr. ${o.doctorName}</b>${o.clinicName?" | "+o.clinicName:""}${o.phone?" | 📞 "+o.phone:""}</p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
+  const billTo = o.custType==="store"
+    ? `${o.storeName||""} | 📞 ${o.storeContact||""}`
+    : o.custType==="both"
+    ? `Dr. ${o.doctorName} / ${o.storeName||""} | 📞 ${o.phone||""}`
+    : `Dr. ${o.doctorName}${o.clinicName?" | "+o.clinicName:""}${o.phone?" | 📞 "+o.phone:""}`;
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>${billTo}</b></p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
 }
 
-function iHTML(o,iNo,iDt){
-  const s=sub(o.products),g=(s*.12).toFixed(2),gr=(s*1.12).toFixed(2);
-  const rows=o.products.map((p,i)=>{const a=p.mrp?(parseFloat(p.mrp)*parseInt(p.qty||1)).toFixed(2):"—";const cs=p.cat==="Antiviral"?"background:#fef3c7;color:#92400e":"background:#eff6ff;color:#1e40af";return`<tr><td>${i+1}</td><td><b>${p.name}</b>${p.cat?`<span style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700;${cs}">${p.cat}</span>`:""}</td><td>${p.pack||"—"}</td><td style="text-align:right">${p.mrp?"₹"+parseFloat(p.mrp).toFixed(2):"—"}</td><td style="text-align:center"><b>${p.qty}</b></td><td style="text-align:right"><b>${p.mrp?"₹"+a:"—"}</b></td></tr>`;}).join("");
-  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:10mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.ib{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:10px 16px;margin:12px 0;display:flex;justify-content:space-between}.ib h2{font-size:18px;font-weight:800;letter-spacing:2px}.im{font-size:12px;line-height:1.8;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:12px;font-size:11px;color:#1e40af;display:flex;gap:24px}.pts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.pb{border:1px solid #dbeafe;border-radius:8px;padding:10px 14px;background:#f8faff}.pt{font-size:10px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;border-bottom:1px solid #dbeafe;padding-bottom:4px}.pn{font-size:13px;font-weight:800;color:#0d1b4b;margin-bottom:2px}.ps{font-size:11px;color:#555;line-height:1.6}table{width:100%;border-collapse:collapse;margin-bottom:10px}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-transform:uppercase;text-align:left}tbody tr:nth-child(even){background:#f8faff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #e0ecff}.tb2{margin-left:auto;width:240px;margin-bottom:12px}.tr2{display:flex;justify-content:space-between;padding:5px 10px;font-size:12px}.ts{background:#f0f4ff;border-radius:4px}.tgd{background:#0d1b4b;color:#fff;border-radius:6px;padding:8px 14px;font-weight:800;font-size:14px;margin-top:4px}.terms{background:#f0f4ff;border-radius:6px;padding:7px 12px;margin-bottom:10px;font-size:10px;color:#555;line-height:1.6}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:8px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:140px;margin-top:38px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="ib"><h2>TAX INVOICE</h2><div class="im"><div><b>Invoice No:</b> ${iNo}</div><div><b>Date:</b> ${fdt(iDt)}</div><div><b>Order:</b> ${o.orderNo}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="pts"><div class="pb"><div class="pt">🏢 Sold By</div><div class="pn">${CO.short}</div><div class="ps">${CO.a1}<br/>${CO.a2}<br/>📞 ${CO.ph}</div></div><div class="pb"><div class="pt">👨‍⚕️ Bill To</div><div class="pn">Dr. ${o.doctorName}</div><div class="ps">${o.clinicName?o.clinicName+"<br/>":""}${[o.area,o.city,o.pincode].filter(Boolean).join(", ")}${o.phone?"<br/>📞 "+o.phone:""}</div></div></div><table><thead><tr><th>#</th><th>Product</th><th>Pack</th><th style="text-align:right">MRP</th><th style="text-align:center">Qty</th><th style="text-align:right">Amount</th></tr></thead><tbody>${rows}</tbody></table><div class="tb2"><div class="tr2 ts"><span>Subtotal</span><span>₹${s.toFixed(2)}</span></div><div class="tr2" style="color:#1e40af;font-weight:600"><span>GST 12%</span><span>₹${g}</span></div><div class="tr2 tgd"><span>GRAND TOTAL</span><span>₹${gr}</span></div></div><div class="terms"><b>Terms:</b> Goods once sold will not be taken back. Subject to Mumbai jurisdiction. Payment due within 30 days.</div><div class="ft"><div><b style="color:#0d1b4b">${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
+function iHTML(o, iNo, iDt, gstType) {
+  const gst = calcGST(o.products, gstType);
+  const totalAmt = subAmt(o.products);
+
+  const prodRows = o.products.map((p,i) => {
+    const amt = (parseFloat(p.mrp||0)*parseInt(p.qty||1)).toFixed(2);
+    const cs = p.cat==="Antiviral"?"background:#fef3c7;color:#92400e":p.cat==="Ayurvedic"?"background:#f0fdf4;color:#166534":"background:#eff6ff;color:#1e40af";
+    return `<tr><td>${i+1}</td><td><b>${p.name}</b>${p.cat?`<span style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700;${cs}">${p.cat}</span>`:""}</td><td>${p.pack||"—"}</td><td style="text-align:right">${p.gst||0}%</td><td style="text-align:right">${p.mrp?"₹"+parseFloat(p.mrp).toFixed(2):"—"}</td><td style="text-align:center"><b>${p.qty}</b></td><td style="text-align:right"><b>₹${amt}</b></td></tr>`;
+  }).join("");
+
+  const gstRows = gst.rows.map(r =>
+    `<tr><td style="text-align:left">${r.label}</td><td style="text-align:right">₹${r.base.toFixed(2)}</td><td style="text-align:right">₹${r.tax.toFixed(2)}</td></tr>`
+  ).join("");
+
+  // Bill To
+  let billToHTML = "";
+  if(o.custType === "store") {
+    billToHTML = `<div class="pn">${o.storeName||"Medical Store"}</div><div class="ps">${o.storeAddress||""}${o.storeContact?"<br/>📞 "+o.storeContact:""}${o.storeGstin?"<br/><b>GSTIN:</b> "+o.storeGstin:""}</div>`;
+  } else if(o.custType === "both") {
+    billToHTML = `<div class="pn">Dr. ${o.doctorName} / ${o.storeName||""}</div><div class="ps">${o.clinicName||""}${o.storeName?"<br/>🏪 "+o.storeName:""}${o.storeGstin?"<br/><b>GSTIN:</b> "+o.storeGstin:""}${o.phone?"<br/>📞 "+o.phone:""}</div>`;
+  } else {
+    billToHTML = `<div class="pn">Dr. ${o.doctorName}</div><div class="ps">${o.clinicName?o.clinicName+"<br/>":""}${[o.area,o.city,o.pincode].filter(Boolean).join(", ")}${o.phone?"<br/>📞 "+o.phone:""}</div>`;
+  }
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:10mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.ib{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:10px 16px;margin:12px 0;display:flex;justify-content:space-between}.ib h2{font-size:18px;font-weight:800;letter-spacing:2px}.im{font-size:12px;line-height:1.8;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:12px;font-size:11px;color:#1e40af;display:flex;gap:24px}.pts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.pb{border:1px solid #dbeafe;border-radius:8px;padding:10px 14px;background:#f8faff}.pt{font-size:10px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;border-bottom:1px solid #dbeafe;padding-bottom:4px}.pn{font-size:13px;font-weight:800;color:#0d1b4b;margin-bottom:2px}.ps{font-size:11px;color:#555;line-height:1.6}table{width:100%;border-collapse:collapse;margin-bottom:10px}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f8faff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #e0ecff}.gtbl{width:100%;border-collapse:collapse;margin-bottom:10px;background:#f8faff}.gtbl th{background:#1e40af;color:#fff;padding:6px 10px;font-size:11px;text-align:right}.gtbl th:first-child{text-align:left}.gtbl td{padding:6px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.tb2{margin-left:auto;width:260px;margin-bottom:12px}.tr2{display:flex;justify-content:space-between;padding:5px 10px;font-size:12px}.ts{background:#f0f4ff;border-radius:4px}.tgd{background:#0d1b4b;color:#fff;border-radius:6px;padding:8px 14px;font-weight:800;font-size:14px;margin-top:4px}.terms{background:#f0f4ff;border-radius:6px;padding:7px 12px;margin-bottom:10px;font-size:10px;color:#555;line-height:1.6}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:8px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:140px;margin-top:38px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="pg">
+<div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div>
+<div class="ib"><h2>TAX INVOICE</h2><div class="im"><div><b>Invoice No:</b> ${iNo}</div><div><b>Date:</b> ${fdt(iDt)}</div><div><b>Order:</b> ${o.orderNo}</div><div><b>GST Type:</b> ${gstType.toUpperCase()}</div></div></div>
+<div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div>
+<div class="pts">
+  <div class="pb"><div class="pt">🏢 Sold By</div><div class="pn">${CO.short}</div><div class="ps">${CO.a1}<br/>${CO.a2}<br/>📞 ${CO.ph}</div></div>
+  <div class="pb"><div class="pt">${o.custType==="store"?"🏪 Medical Store":o.custType==="both"?"👨‍⚕️ Doctor + 🏪 Store":"👨‍⚕️ Bill To"}</div>${billToHTML}</div>
+</div>
+<table><thead><tr><th>#</th><th>Product</th><th>Pack</th><th style="text-align:right">GST%</th><th style="text-align:right">MRP</th><th style="text-align:center">Qty</th><th style="text-align:right">Amount</th></tr></thead><tbody>${prodRows}</tbody></table>
+<table class="gtbl"><thead><tr><th>GST Breakup</th><th style="text-align:right">Taxable Value</th><th style="text-align:right">Tax Amount</th></tr></thead><tbody>${gstRows}<tr style="font-weight:700;background:#dbeafe"><td>Total</td><td style="text-align:right">₹${gst.totalBase.toFixed(2)}</td><td style="text-align:right">₹${gst.totalTax.toFixed(2)}</td></tr></tbody></table>
+<div class="tb2">
+  <div class="tr2 ts"><span>Subtotal (incl. tax)</span><span>₹${totalAmt.toFixed(2)}</span></div>
+  <div class="tr2" style="color:#1e40af;font-weight:600"><span>Total Tax</span><span>₹${gst.totalTax.toFixed(2)}</span></div>
+  <div class="tr2 tgd"><span>GRAND TOTAL</span><span>₹${totalAmt.toFixed(2)}</span></div>
+</div>
+<div class="terms"><b>Terms:</b> Goods once sold will not be taken back. Subject to Mumbai jurisdiction. Payment due within 30 days.</div>
+<div class="ft"><div><b style="color:#0d1b4b">${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div>
+</div></body></html>`;
 }
 
 // ===== RENDER =====
@@ -215,22 +307,29 @@ function render(){
   const s=S;
   const uCats=["All",...new Set(s.catalog.map(p=>p.cat||"General"))];
   const forOrd=s.catalog.filter(p=>p.name.toLowerCase().includes(s.pSearch.toLowerCase())&&(s.pCat==="All"||p.cat===s.pCat));
-  const filtO=s.orders.filter(o=>[o.doctorName,o.phone,o.city,o.area].join(" ").toLowerCase().includes(s.search.toLowerCase()));
+  const filtO=s.orders.filter(o=>[o.doctorName,o.storeName,o.phone,o.storeContact,o.city,o.area].join(" ").toLowerCase().includes(s.search.toLowerCase()));
   const filtC=s.catalog.filter(p=>p.name.toLowerCase().includes(s.catSearch.toLowerCase()));
 
   let html="";
 
+  // ---- LIST ----
   if(s.view==="list"){
     const cards=filtO.length===0
-      ?`<div class="empty"><div style="font-size:48px;margin-bottom:10px">💊</div><div style="font-size:17px;font-weight:700;color:#888">No orders yet</div><div style="font-size:13px;color:#bbb;margin-top:5px">Tap ➕ New Order to start</div></div>`
+      ?`<div class="empty"><div style="font-size:48px;margin-bottom:10px">💊</div><div style="font-size:17px;font-weight:700;color:#888">No orders yet</div><div style="font-size:13px;color:#bbb;margin-top:5px">Tap ➕ New to start</div></div>`
       :filtO.map(o=>`<div class="card" onclick="vd('${o._id}')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
               <span style="background:#eff6ff;color:#1e40af;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800">${o.orderNo}</span>
-              <span style="font-weight:800;font-size:15px;color:#0d1b4b">Dr. ${o.doctorName}</span>
+              ${o.custType==="store"?`<span style="background:#f0fdf4;color:#166534;border:1px solid #86efac;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">🏪 Store</span>`:""}
+              ${o.custType==="both"?`<span style="background:#fef9c3;color:#854d0e;border:1px solid #fde68a;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">👨‍⚕️+🏪 Both</span>`:""}
+              <span style="font-weight:800;font-size:15px;color:#0d1b4b">${billName(o)}</span>
             </div>
-            <div style="color:#666;font-size:13px">${o.clinicName?"🏥 "+o.clinicName+" ":""}📞 ${o.phone}${o.area?" 📍 "+[o.area,o.city].filter(Boolean).join(", "):""}</div>
+            <div style="color:#666;font-size:13px">
+              ${o.custType==="doctor"||o.custType==="both"?`${o.clinicName?"🏥 "+o.clinicName+" ":""}📞 ${o.phone||""}`:``}
+              ${o.custType==="store"?`🏪 ${o.storeName||""} 📞 ${o.storeContact||""}`:``}
+              ${o.area?" 📍 "+[o.area,o.city].filter(Boolean).join(", "):""}
+            </div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px">
               ${o.products.slice(0,3).map(p=>ptag(p)).join("")}${o.products.length>3?`<span style="color:#888;font-size:11px">+${o.products.length-3} more</span>`:""}
             </div>
@@ -246,72 +345,137 @@ function render(){
         </div>
       </div>`).join("");
     html=`<div style="display:flex;gap:10px;margin-bottom:14px;align-items:center">
-      <input class="inp" style="flex:1" placeholder="🔍 Search doctor, phone, city..." value="${s.search}" oninput="set({search:this.value})"/>
+      <input class="inp" style="flex:1" placeholder="🔍 Search doctor, store, phone, city..." value="${s.search}" oninput="set({search:this.value})"/>
       <div style="background:#1a3a8f;color:#fff;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;white-space:nowrap">${filtO.length} Orders</div>
     </div>${cards}`;
   }
 
+  // ---- FORM ----
   else if(s.view==="form"){
     const f=s.form,sel=f.products.map(p=>p.name);
-    const cBtns=uCats.map(c=>`<button style="padding:3px 11px;border-radius:20px;font-size:11px;cursor:pointer;font-weight:700;border:1.5px solid;background:${s.pCat===c?"#0d1b4b":c==="Antiviral"?"#fef3c7":"#fff"};color:${s.pCat===c?"#fff":c==="Antiviral"?"#92400e":"#1e40af"};border-color:${s.pCat===c?"#0d1b4b":c==="Antiviral"?"#fcd34d":"#bfdbfe"}" onclick="set({pCat:'${c}'})">${c==="Antiviral"?"🦠 ":""}${c}</button>`).join("");
-    const pBtns=forOrd.map(p=>{const on=sel.includes(p.name),av=p.cat==="Antiviral";return`<button style="padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:700;border:1.5px solid;background:${on?"#0d1b4b":"#fff"};color:${on?"#fff":av?"#92400e":"#1e40af"};border-color:${on?"#0d1b4b":av?"#fcd34d":"#bfdbfe"}" onclick="tp('${p.name}')">${on?"✓ ":""}${p.name}</button>`;}).join("");
-    const qRows=f.products.map((p,i)=>`<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}"><td style="padding:7px 10px;font-weight:700;color:#0d1b4b;font-size:12px">${p.name}</td><td style="padding:7px 10px;font-size:12px;color:#666">${p.pack||"—"}</td><td style="padding:7px 6px"><input class="mi" type="number" value="${p.mrp}" onchange="up('${p.name}','mrp',this.value)"/></td><td style="padding:7px 6px"><input class="qi" type="number" min="1" value="${p.qty}" onchange="up('${p.name}','qty',this.value)"/></td><td style="padding:7px 6px"><input class="bi" value="${p.bonus||""}" placeholder="1+1" onchange="up('${p.name}','bonus',this.value)"/></td><td style="padding:7px 6px"><button onclick="rpo('${p.name}')" style="background:#fce4ec;color:#c62828;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px">✕</button></td></tr>`).join("");
-    const dis=!f.doctorName||!f.phone||f.products.length===0;
-    html=`<div class="box">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;border-bottom:2px solid #eff6ff;padding-bottom:14px">
-        <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:22px">📝</div>
-        <div><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">${s.editId?"Edit Order":"New Sales Order"}</h2><div style="color:#888;font-size:13px">Fill doctor details and select products</div></div>
-      </div>
+    const cBtns=uCats.map(c=>`<button style="padding:3px 11px;border-radius:20px;font-size:11px;cursor:pointer;font-weight:700;border:1.5px solid;background:${s.pCat===c?"#0d1b4b":c==="Antiviral"?"#fef3c7":c==="Ayurvedic"?"#f0fdf4":"#fff"};color:${s.pCat===c?"#fff":c==="Antiviral"?"#92400e":c==="Ayurvedic"?"#166534":"#1e40af"};border-color:${s.pCat===c?"#0d1b4b":c==="Antiviral"?"#fcd34d":c==="Ayurvedic"?"#86efac":"#bfdbfe"}" onclick="set({pCat:'${c}'})">${c==="Antiviral"?"🦠 ":c==="Ayurvedic"?"🌿 ":""}${c}</button>`).join("");
+    const pBtns=forOrd.map(p=>{const on=sel.includes(p.name),av=p.cat==="Antiviral",ay=p.cat==="Ayurvedic";const bg=on?"#0d1b4b":av?"#fef3c7":ay?"#f0fdf4":"#fff";const cl=on?"#fff":av?"#92400e":ay?"#166534":"#1e40af";const bd=on?"#0d1b4b":av?"#fcd34d":ay?"#86efac":"#bfdbfe";return`<button style="padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:700;border:1.5px solid;background:${bg};color:${cl};border-color:${bd}" onclick="tp('${p.name}')">${on?"✓ ":""}${p.name}</button>`;}).join("");
+    const qRows=f.products.map((p,i)=>`<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}">
+      <td style="padding:7px 10px;font-weight:700;color:#0d1b4b;font-size:12px">${p.name}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#666">${p.pack||"—"}</td>
+      <td style="padding:7px 6px"><input class="mi" type="number" value="${p.mrp}" onchange="up('${p.name}','mrp',this.value)"/></td>
+      <td style="padding:7px 6px">
+        <select style="padding:4px 5px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" onchange="up('${p.name}','gst',this.value)">
+          ${[0,5,12,18,28].map(r=>`<option value="${r}" ${parseFloat(p.gst||12)===r?"selected":""}>${r}%</option>`).join("")}
+        </select>
+      </td>
+      <td style="padding:7px 6px"><input class="qi" type="number" min="1" value="${p.qty}" onchange="up('${p.name}','qty',this.value)"/></td>
+      <td style="padding:7px 6px"><input class="bi" value="${p.bonus||""}" placeholder="1+1" onchange="up('${p.name}','bonus',this.value)"/></td>
+      <td style="padding:7px 6px"><button onclick="rpo('${p.name}')" style="background:#fce4ec;color:#c62828;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px">✕</button></td>
+    </tr>`).join("");
+    const dis=!((f.custType==="doctor"&&f.doctorName&&f.phone)||(f.custType==="store"&&f.storeName)||(f.custType==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
+
+    // Customer type sections
+    const doctorSection = (f.custType==="doctor"||f.custType==="both") ? `
       <div class="sec"><div class="stl">👨‍⚕️ Doctor Info</div>
         <div class="g2">
-          <div><label class="lbl">Doctor Name *</label><input class="inp" value="${f.doctorName}" oninput="sf('doctorName',this.value)" placeholder="e.g. Rajesh Sharma"/></div>
-          <div><label class="lbl">Clinic</label><input class="inp" value="${f.clinicName}" oninput="sf('clinicName',this.value)" placeholder="City Medical Centre"/></div>
-          <div><label class="lbl">Phone *</label><input class="inp" type="tel" value="${f.phone}" oninput="sf('phone',this.value)" placeholder="9876543210"/></div>
+          <div><label class="lbl">Doctor Name ${f.custType==="doctor"?"*":""}</label><input class="inp" value="${f.doctorName}" oninput="sf('doctorName',this.value)" placeholder="e.g. Rajesh Sharma"/></div>
+          <div><label class="lbl">Clinic / Hospital</label><input class="inp" value="${f.clinicName}" oninput="sf('clinicName',this.value)" placeholder="City Medical Centre"/></div>
+          <div><label class="lbl">Phone ${f.custType==="doctor"?"*":""}</label><input class="inp" type="tel" value="${f.phone}" oninput="sf('phone',this.value)" placeholder="9876543210"/></div>
           <div><label class="lbl">Email</label><input class="inp" type="email" value="${f.email}" oninput="sf('email',this.value)" placeholder="doctor@email.com"/></div>
           <div><label class="lbl">Area</label><input class="inp" value="${f.area}" oninput="sf('area',this.value)" placeholder="Malad West"/></div>
           <div><label class="lbl">City</label><input class="inp" value="${f.city}" oninput="sf('city',this.value)" placeholder="Mumbai"/></div>
           <div><label class="lbl">Pincode</label><input class="inp" value="${f.pincode}" oninput="sf('pincode',this.value)" placeholder="400095"/></div>
           <div><label class="lbl">Visit Date</label><input class="inp" type="date" value="${f.visitDate}" oninput="sf('visitDate',this.value)"/></div>
           <div style="grid-column:span 2"><label class="lbl">Address</label><textarea class="inp" rows="2" oninput="sf('address',this.value)" style="resize:vertical">${f.address}</textarea></div>
-          <div><label class="lbl">Status</label><select class="inp" onchange="sf('status',this.value)"><option ${f.status==="Pending"?"selected":""}>Pending</option><option ${f.status==="Processing"?"selected":""}>Processing</option><option ${f.status==="Delivered"?"selected":""}>Delivered</option><option ${f.status==="Cancelled"?"selected":""}>Cancelled</option></select></div>
+        </div>
+      </div>` : "";
+
+    const storeSection = (f.custType==="store"||f.custType==="both") ? `
+      <div class="sec3"><div class="stl">🏪 Medical Store Info</div>
+        <div class="g2">
+          <div><label class="lbl">Store Name *</label><input class="inp" value="${f.storeName}" oninput="sf('storeName',this.value)" placeholder="e.g. Sharma Medical Store"/></div>
+          <div><label class="lbl">Contact Number</label><input class="inp" type="tel" value="${f.storeContact}" oninput="sf('storeContact',this.value)" placeholder="9876543210"/></div>
+          <div style="grid-column:span 2"><label class="lbl">Store Address</label><textarea class="inp" rows="2" oninput="sf('storeAddress',this.value)" style="resize:vertical">${f.storeAddress}</textarea></div>
+          <div><label class="lbl">Store GSTIN</label><input class="inp" value="${f.storeGstin}" oninput="sf('storeGstin',this.value)" placeholder="27XXXXX"/></div>
+        </div>
+      </div>` : "";
+
+    html=`<div class="box">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;border-bottom:2px solid #eff6ff;padding-bottom:14px">
+        <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:22px">📝</div>
+        <div><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">${s.editId?"Edit Order":"New Sales Order"}</h2><div style="color:#888;font-size:13px">Select customer type then fill details</div></div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label class="lbl" style="margin-bottom:8px">📋 Order For</label>
+        <div class="type-toggle">
+          <button class="type-btn ${f.custType==="doctor"?"on":"off"}" onclick="sf('custType','doctor');render()">👨‍⚕️ Doctor</button>
+          <button class="type-btn ${f.custType==="store"?"on":"off"}" onclick="sf('custType','store');render()">🏪 Medical Store</button>
+          <button class="type-btn ${f.custType==="both"?"on":"off"}" onclick="sf('custType','both');render()">👨‍⚕️ + 🏪 Both</button>
         </div>
       </div>
+
+      ${doctorSection}
+      ${storeSection}
+
+      <div class="sec"><div class="g2">
+        <div><label class="lbl">Status</label><select class="inp" onchange="sf('status',this.value)"><option ${f.status==="Pending"?"selected":""}>Pending</option><option ${f.status==="Processing"?"selected":""}>Processing</option><option ${f.status==="Delivered"?"selected":""}>Delivered</option><option ${f.status==="Cancelled"?"selected":""}>Cancelled</option></select></div>
+        <div><label class="lbl">Notes</label><input class="inp" value="${f.notes}" oninput="sf('notes',this.value)" placeholder="Any special instructions..."/></div>
+      </div></div>
+
       <div class="sec2">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div class="stl" style="margin-bottom:0">💊 Products (${f.products.length})</div>
           <button onclick="sv('catalog')" style="font-size:11px;color:#1e40af;background:none;border:none;cursor:pointer;text-decoration:underline;font-weight:700">⚙️ Manage</button>
         </div>
-        <input class="inp" style="margin-bottom:8px" placeholder="🔍 Search..." value="${s.pSearch}" oninput="set({pSearch:this.value})"/>
+        <input class="inp" style="margin-bottom:8px" placeholder="🔍 Search medicines..." value="${s.pSearch}" oninput="set({pSearch:this.value})"/>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${cBtns}</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto;padding:2px">${pBtns}</div>
       </div>
-      ${f.products.length>0?`<div class="tw"><div class="th">📦 QUANTITIES</div><table><thead><tr>${["Product","Pack","MRP","Qty","Bonus",""].map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${qRows}</tbody></table></div>`:""}
-      <div style="margin-bottom:16px"><label class="lbl">Notes</label><textarea class="inp" rows="2" oninput="sf('notes',this.value)" style="resize:vertical">${f.notes}</textarea></div>
+
+      ${f.products.length>0?`<div class="tw"><div class="th">📦 QUANTITIES & GST RATE</div><table><thead><tr>${["Product","Pack","MRP","GST%","Qty","Bonus",""].map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${qRows}</tbody></table></div>`:""}
+
       <div style="display:flex;gap:12px">
-        <button class="bp" onclick="so()" ${dis?"disabled":""} style="opacity:${dis?.5:1}">${s.editId?"💾 Update":"✅ Save Order"}</button>
+        <button class="bp" onclick="so()" ${dis?"disabled":""} style="opacity:${dis?.5:1}">${s.editId?"💾 Update Order":"✅ Save Order"}</button>
         <button class="bs" onclick="sv('list')">Cancel</button>
       </div>
     </div>`;
   }
 
+  // ---- CATALOG ----
   else if(s.view==="catalog"){
-    const rows=filtC.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:${i%2===0?"#f8faff":"#fff"};border:1px solid #dbeafe;margin-bottom:6px"><div><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:#0d1b4b;font-size:13px">💊 ${p.name}</span>${ctag(p.cat)}</div><div style="font-size:12px;color:#888;margin-top:2px">${p.pack?"Pack: "+p.pack:""}${p.mrp?`<span style="margin-left:10px;color:#1e40af;font-weight:700">MRP: ₹${p.mrp}</span>`:""}</div></div><button class="bd" onclick="rp('${p._id}','${p.name}')">🗑 Remove</button></div>`).join("");
+    const rows=filtC.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:${i%2===0?"#f8faff":"#fff"};border:1px solid #dbeafe;margin-bottom:6px">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-weight:700;color:#0d1b4b;font-size:13px">${p.cat==="Ayurvedic"?"🌿":"💊"} ${p.name}</span>${ctag(p.cat)}
+          <span style="font-size:10px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:8px;padding:1px 7px;font-weight:700">GST ${p.gst||0}%</span>
+        </div>
+        <div style="font-size:12px;color:#888;margin-top:2px">${p.pack?"Pack: "+p.pack:""}${p.mrp?`<span style="margin-left:10px;color:#1e40af;font-weight:700">MRP: ₹${p.mrp}</span>`:""}</div>
+      </div>
+      <button class="bd" onclick="rp('${p._id}','${p.name}')">🗑 Remove</button>
+    </div>`).join("");
+
     html=`<div class="box">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;border-bottom:2px solid #eff6ff;padding-bottom:14px">
         <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:22px">⚙️</div>
         <div><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">Product Catalog</h2><div style="color:#888;font-size:13px">${s.catalog.length} medicines</div></div>
       </div>
       <div class="sec2"><div class="stl">➕ Add Medicine</div>
-        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end">
-          <div><label class="lbl">Name *</label><input class="inp" value="${s.newP.name}" oninput="snp('name',this.value)" placeholder="Medicine name" onkeydown="if(event.key==='Enter')ap()"/></div>
-          <div><label class="lbl">Pack</label><input class="inp" value="${s.newP.pack}" oninput="snp('pack',this.value)" placeholder="10x10"/></div>
-          <div><label class="lbl">MRP ₹</label><input class="inp" type="number" value="${s.newP.mrp}" oninput="snp('mrp',this.value)" placeholder="0"/></div>
+        <div class="g2">
+          <div style="grid-column:span 2"><label class="lbl">Medicine Name *</label><input class="inp" value="${s.newP.name}" oninput="snp('name',this.value)" placeholder="e.g. Ashwagandha 500mg Cap" onkeydown="if(event.key==='Enter')ap()"/></div>
+          <div><label class="lbl">Pack Size</label><input class="inp" value="${s.newP.pack}" oninput="snp('pack',this.value)" placeholder="10x10"/></div>
+          <div><label class="lbl">MRP ₹</label><input class="inp" type="number" value="${s.newP.mrp}" oninput="snp('mrp',this.value)" placeholder="0.00"/></div>
           <div><label class="lbl">Category</label><select class="inp" onchange="snp('cat',this.value)">${CATS.filter(c=>c!=="All").map(c=>`<option ${s.newP.cat===c?"selected":""}>${c}</option>`).join("")}</select></div>
-          <button onclick="ap()" style="background:#0d1b4b;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:800;cursor:pointer;height:40px">Add</button>
+          <div><label class="lbl">GST Rate</label><select class="inp" onchange="snp('gst',this.value)">${GST_OPTS.map(r=>`<option value="${r}" ${s.newP.gst==r?"selected":""}>${r}% ${r===0?"(Exempt)":r===5?"(Essential)":r===12?"(Standard)":r===18?"(Supplement)":"(Luxury)"}</option>`).join("")}</select></div>
         </div>
-        ${s.catErr?`<div style="color:#c62828;font-size:12px;margin-top:6px">⚠️ ${s.catErr}</div>`:""}
+        <button onclick="ap()" style="margin-top:10px;background:#0d1b4b;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:800;cursor:pointer">➕ Add Medicine</button>
+        ${s.catErr?`<span style="color:#c62828;font-size:12px;margin-left:10px">⚠️ ${s.catErr}</span>`:""}
       </div>
-      <input class="inp" style="margin-bottom:12px" placeholder="🔍 Search..." value="${s.catSearch}" oninput="set({catSearch:this.value})"/>
+
+      <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#92400e">
+        <b>📋 GST Rates in India:</b> 0% — Ayurvedic/Exempt &nbsp;|&nbsp; 5% — Essential medicines (Paracetamol, Insulin etc.) &nbsp;|&nbsp; 12% — Most pharma &nbsp;|&nbsp; 18% — Supplements/Vitamins &nbsp;|&nbsp; 28% — Luxury health products
+      </div>
+
+      <input class="inp" style="margin-bottom:12px" placeholder="🔍 Search medicines..." value="${s.catSearch}" oninput="set({catSearch:this.value})"/>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+        ${CATS.map(c=>`<button style="padding:3px 11px;border-radius:20px;font-size:11px;cursor:pointer;font-weight:700;border:1.5px solid;background:${s.pCat===c?"#0d1b4b":"#fff"};color:${s.pCat===c?"#fff":"#555"};border-color:${s.pCat===c?"#0d1b4b":"#ddd"}" onclick="set({pCat:'${c}'})">${c==="Ayurvedic"?"🌿 ":c==="Antiviral"?"🦠 ":""}${c}</button>`).join("")}
+      </div>
       <div style="max-height:380px;overflow-y:auto">${rows}</div>
       <div style="margin-top:16px;display:flex;gap:10px">
         <button class="bp" onclick="sv('form')">← Back to Order Form</button>
@@ -320,14 +484,45 @@ function render(){
     </div>`;
   }
 
+  // ---- DETAIL ----
   else if(s.view==="detail"&&s.detail){
     const d=s.detail;
-    const pRows=d.products.map((p,i)=>`<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}"><td style="padding:7px 10px;color:#888;font-size:12px">${i+1}</td><td style="padding:7px 10px;font-weight:700;color:#0d1b4b">${p.name}</td><td style="padding:7px 10px">${ctag(p.cat)}</td><td style="padding:7px 10px;font-size:12px;color:#666">${p.pack||"—"}</td><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e40af">${p.mrp?"₹"+p.mrp:"—"}</td><td style="padding:7px 10px"><span style="background:#dbeafe;color:#1e40af;border-radius:12px;padding:2px 9px;font-weight:800;font-size:13px">${p.qty}</span></td><td style="padding:7px 10px;font-size:12px;color:#666">${p.bonus||"—"}</td></tr>`).join("");
+    const pRows=d.products.map((p,i)=>`<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}">
+      <td style="padding:7px 10px;color:#888;font-size:12px">${i+1}</td>
+      <td style="padding:7px 10px;font-weight:700;color:#0d1b4b">${p.name}</td>
+      <td style="padding:7px 10px">${ctag(p.cat)}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#666">${p.pack||"—"}</td>
+      <td style="padding:7px 10px;font-size:11px;color:#1e40af;font-weight:700">${p.gst||0}%</td>
+      <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e40af">${p.mrp?"₹"+p.mrp:"—"}</td>
+      <td style="padding:7px 10px"><span style="background:#dbeafe;color:#1e40af;border-radius:12px;padding:2px 9px;font-weight:800;font-size:13px">${p.qty}</span></td>
+      <td style="padding:7px 10px;font-size:12px;color:#666">${p.bonus||"—"}</td>
+    </tr>`).join("");
+
+    const custInfo = d.custType==="store"
+      ? `<div style="background:#f0fdf4;border-radius:10px;padding:12px 14px;margin-bottom:14px;border:1.5px solid #86efac">
+          <div style="font-size:11px;color:#166534;font-weight:800;margin-bottom:4px">🏪 Medical Store</div>
+          <div style="font-weight:800;font-size:15px;color:#0d1b4b">${d.storeName||"—"}</div>
+          <div style="font-size:13px;color:#555">${d.storeContact?"📞 "+d.storeContact:""} ${d.storeGstin?"| GSTIN: "+d.storeGstin:""}</div>
+          ${d.storeAddress?`<div style="font-size:12px;color:#888;margin-top:2px">📍 ${d.storeAddress}</div>`:""}
+        </div>`
+      : d.custType==="both"
+      ? `<div class="g2" style="margin-bottom:14px">
+          <div style="background:#f0f7ff;border-radius:10px;padding:10px 14px;border:1px solid #dbeafe"><div style="font-size:11px;color:#888;margin-bottom:2px">👨‍⚕️ Doctor</div><div style="font-weight:700;color:#0d1b4b">Dr. ${d.doctorName}</div><div style="font-size:12px;color:#666">${d.clinicName||""} ${d.phone?"| 📞 "+d.phone:""}</div></div>
+          <div style="background:#f0fdf4;border-radius:10px;padding:10px 14px;border:1px solid #86efac"><div style="font-size:11px;color:#166534;margin-bottom:2px;font-weight:700">🏪 Store</div><div style="font-weight:700;color:#0d1b4b">${d.storeName||"—"}</div><div style="font-size:12px;color:#666">${d.storeContact?"📞 "+d.storeContact:""} ${d.storeGstin?"| "+d.storeGstin:""}</div></div>
+        </div>`
+      : `<div class="g2" style="margin-bottom:14px">
+          ${[["🏥","Clinic",d.clinicName||"—"],["📞","Phone",d.phone||"—"],["✉️","Email",d.email||"—"],["📍","Area/City",[d.area,d.city].filter(Boolean).join(", ")||"—"]].map(([ic,l,v])=>`<div style="background:#f0f7ff;border-radius:10px;padding:10px 14px;border:1px solid #dbeafe"><div style="font-size:11px;color:#888;margin-bottom:2px">${ic} ${l}</div><div style="font-weight:700;color:#0d1b4b">${v}</div></div>`).join("")}
+        </div>`;
+
     html=`<div class="box">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:2px solid #eff6ff;padding-bottom:14px;flex-wrap:wrap;gap:10px">
         <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="background:#eff6ff;color:#1e40af;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800">${d.orderNo}</span>${sbadge(d.status)}</div>
-          <h2 style="margin:0;font-size:21px;color:#0d1b4b;font-weight:800">Dr. ${d.doctorName}</h2>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+            <span style="background:#eff6ff;color:#1e40af;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800">${d.orderNo}</span>${sbadge(d.status)}
+            ${d.custType==="store"?`<span style="background:#f0fdf4;color:#166534;border:1px solid #86efac;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">🏪 Store Order</span>`:""}
+            ${d.custType==="both"?`<span style="background:#fef9c3;color:#854d0e;border:1px solid #fde68a;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">👨‍⚕️+🏪 Combined</span>`:""}
+          </div>
+          <h2 style="margin:0;font-size:21px;color:#0d1b4b;font-weight:800">${billName(d)}</h2>
           <div style="color:#888;font-size:13px;margin-top:3px">${d.date}${d.visitDate?" • Visit: "+d.visitDate:""}</div>
         </div>
         <div style="display:flex;gap:8px">
@@ -335,11 +530,9 @@ function render(){
           <button onclick="oi('${d._id}')" style="background:#0d1b4b;color:#fff;border:2px solid #fcd34d;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:800;cursor:pointer">🧾 Invoice</button>
         </div>
       </div>
-      <div class="g2" style="margin-bottom:14px">
-        ${[["🏥","Clinic",d.clinicName||"—"],["📞","Phone",d.phone],["✉️","Email",d.email||"—"],["📍","Area/City",[d.area,d.city].filter(Boolean).join(", ")||"—"]].map(([ic,l,v])=>`<div style="background:#f0f7ff;border-radius:10px;padding:10px 14px;border:1px solid #dbeafe"><div style="font-size:11px;color:#888;margin-bottom:2px">${ic} ${l}</div><div style="font-weight:700;color:#0d1b4b">${v}</div></div>`).join("")}
-      </div>
+      ${custInfo}
       <div class="tw"><div class="th">💊 PRODUCTS (${d.products.length})</div>
-        <table><thead><tr>${["#","Product","Cat","Pack","MRP","Qty","Bonus"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+        <table><thead><tr>${["#","Product","Cat","Pack","GST","MRP","Qty","Bonus"].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
         <tbody>${pRows}</tbody></table>
       </div>
       ${d.notes?`<div style="background:#f0f7ff;border-radius:10px;padding:10px 14px;margin-bottom:14px;border:1px solid #bfdbfe"><div style="font-size:11px;color:#888;margin-bottom:2px">📝 Notes</div><div style="color:#444">${d.notes}</div></div>`:""}
@@ -351,32 +544,71 @@ function render(){
     </div>`;
   }
 
-  // Invoice Modal
+  // ---- INVOICE MODAL ----
   let mod="";
   if(s.inv&&s.invOrd){
-    const o=s.invOrd,sb=sub(o.products),gs=sb*.12,gr=sb+gs;
-    const rows=o.products.map((p,i)=>`<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}"><td style="padding:7px 10px">${ctag(p.cat)}<div style="font-weight:700;color:#0d1b4b;font-size:13px">${p.name}</div></td><td style="padding:7px 10px;font-size:12px;color:#666">${p.pack||"—"}</td><td style="padding:7px 6px;text-align:right"><input class="mi" type="number" value="${p.mrp}" onchange="uip('${p.name}','mrp',this.value)"/></td><td style="padding:7px 6px;text-align:right"><input class="qi" type="number" min="1" value="${p.qty}" onchange="uip('${p.name}','qty',this.value)"/></td><td style="padding:7px 10px;text-align:right;font-weight:700;color:#0d1b4b">${p.mrp?"₹"+(parseFloat(p.mrp)*parseInt(p.qty||1)).toFixed(2):"—"}</td></tr>`).join("");
+    const o=s.invOrd;
+    const gstData = calcGST(o.products, s.gstType);
+    const totalAmt = subAmt(o.products);
+
+    const iRows=o.products.map((p,i)=>`<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}">
+      <td style="padding:7px 10px">${ctag(p.cat)}<div style="font-weight:700;color:#0d1b4b;font-size:13px">${p.name}</div></td>
+      <td style="padding:7px 10px;font-size:12px;color:#666">${p.pack||"—"}</td>
+      <td style="padding:7px 6px;text-align:right">
+        <select style="width:58px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" onchange="uip('${p.name}','gst',this.value)">
+          ${[0,5,12,18,28].map(r=>`<option value="${r}" ${parseFloat(p.gst||12)===r?"selected":""}>${r}%</option>`).join("")}
+        </select>
+      </td>
+      <td style="padding:7px 6px;text-align:right"><input class="mi" type="number" value="${p.mrp}" onchange="uip('${p.name}','mrp',this.value)"/></td>
+      <td style="padding:7px 6px;text-align:right"><input class="qi" type="number" min="1" value="${p.qty}" onchange="uip('${p.name}','qty',this.value)"/></td>
+      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#0d1b4b">₹${(parseFloat(p.mrp||0)*parseInt(p.qty||1)).toFixed(2)}</td>
+    </tr>`).join("");
+
+    const gstRows = gstData.rows.map(r=>`<div class="tr" style="color:#1e40af"><span>${r.label}</span><span style="font-weight:600">₹${r.tax.toFixed(2)}</span></div>`).join("");
+
     mod=`<div class="ov" onclick="if(event.target===this)set({inv:false})"><div class="mod">
-      <div class="mhd"><div><div style="color:#fff;font-weight:800;font-size:17px">🧾 Tax Invoice</div><div style="color:#93c5fd;font-size:12px;margin-top:2px">${o.orderNo} — Dr. ${o.doctorName}</div></div><button onclick="set({inv:false})" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:16px;font-weight:800">✕</button></div>
+      <div class="mhd">
+        <div><div style="color:#fff;font-weight:800;font-size:17px">🧾 Tax Invoice</div><div style="color:#93c5fd;font-size:12px;margin-top:2px">${o.orderNo} — ${billName(o)}</div></div>
+        <button onclick="set({inv:false})" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:16px;font-weight:800">✕</button>
+      </div>
       <div class="mbd">
         <div class="g2" style="margin-bottom:14px">
           <div><label class="lbl">Invoice No</label><input class="inp" style="font-weight:700" value="${s.invNo}" oninput="set({invNo:this.value})"/></div>
-          <div><label class="lbl">Date</label><input class="inp" type="date" value="${s.invDate}" oninput="set({invDate:this.value})"/></div>
+          <div><label class="lbl">Invoice Date</label><input class="inp" type="date" value="${s.invDate}" oninput="set({invDate:this.value})"/></div>
         </div>
+
+        <div style="margin-bottom:14px">
+          <label class="lbl" style="margin-bottom:8px">GST Type</label>
+          <div style="display:flex;gap:8px">
+            <button class="gst-btn ${s.gstType==='cgst'?'gst-on':'gst-off'}" onclick="set({gstType:'cgst'})">CGST + SGST<br/><span style="font-size:10px;font-weight:500">(Within Maharashtra)</span></button>
+            <button class="gst-btn ${s.gstType==='igst'?'gst-on':'gst-off'}" onclick="set({gstType:'igst'})">IGST<br/><span style="font-size:10px;font-weight:500">(Outside Maharashtra)</span></button>
+          </div>
+        </div>
+
         <div style="background:#f0f7ff;border-radius:10px;padding:11px 14px;margin-bottom:14px;border:1.5px solid #dbeafe">
-          <div style="font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;margin-bottom:4px">👨‍⚕️ Bill To</div>
-          <div style="font-weight:800;color:#0d1b4b;font-size:15px">Dr. ${o.doctorName}</div>
-          <div style="color:#555;font-size:13px">${o.clinicName?o.clinicName+" • ":""}${[o.area,o.city].filter(Boolean).join(", ")}${o.phone?" • 📞 "+o.phone:""}</div>
+          <div style="font-size:11px;font-weight:800;color:#1e40af;text-transform:uppercase;margin-bottom:4px">Bill To</div>
+          <div style="font-weight:800;color:#0d1b4b;font-size:15px">${billName(o)}</div>
+          <div style="color:#555;font-size:13px">
+            ${o.custType==="store"?`${o.storeContact?"📞 "+o.storeContact:""} ${o.storeGstin?"| GSTIN: "+o.storeGstin:""}`:``}
+            ${o.custType==="doctor"?`${o.clinicName?o.clinicName+" | ":""}${o.phone?"📞 "+o.phone:""}`:``}
+            ${o.custType==="both"?`Dr. ${o.doctorName} + ${o.storeName||""} ${o.phone?"| 📞 "+o.phone:""}`:``}
+          </div>
         </div>
-        <div class="tw"><div class="th">💊 Items</div>
-          <table><thead><tr>${["Product","Pack","MRP","Qty","Amount"].map((h,i)=>`<th style="text-align:${i>=2?"right":"left"}">${h}</th>`).join("")}</tr></thead>
-          <tbody>${rows}</tbody></table>
+
+        <div class="tw"><div class="th">💊 Items — Edit GST % / MRP / Qty</div>
+          <table><thead><tr>${["Product","Pack","GST%","MRP","Qty","Amount"].map((h,i)=>`<th style="text-align:${i>=2?"right":"left"}">${h}</th>`).join("")}</tr></thead>
+          <tbody>${iRows}</tbody></table>
         </div>
+
         <div style="background:#f0f7ff;border-radius:10px;padding:12px 16px;margin-bottom:16px;border:1.5px solid #bfdbfe">
-          <div class="tr"><span style="color:#555">Subtotal</span><span style="font-weight:600">₹${sb.toFixed(2)}</span></div>
-          <div class="tr" style="color:#1e40af"><span>GST (12%)</span><span style="font-weight:600">₹${gs.toFixed(2)}</span></div>
-          <div class="tg"><span>GRAND TOTAL</span><span>₹${gr.toFixed(2)}</span></div>
+          <div class="tr"><span style="color:#555;font-weight:600">Subtotal (MRP total)</span><span style="font-weight:700">₹${totalAmt.toFixed(2)}</span></div>
+          <div style="border-top:1px dashed #bfdbfe;margin:6px 0"></div>
+          ${gstRows}
+          <div style="border-top:1px dashed #bfdbfe;margin:6px 0"></div>
+          <div class="tr"><span style="color:#555">Total Tax</span><span style="font-weight:700;color:#1e40af">₹${gstData.totalTax.toFixed(2)}</span></div>
+          <div class="tg"><span>GRAND TOTAL</span><span>₹${totalAmt.toFixed(2)}</span></div>
         </div>
+
         <div style="display:flex;gap:12px">
           <button onclick="pi()" style="flex:1;background:#0d1b4b;color:#fff;border:2px solid #fcd34d;border-radius:10px;padding:13px;font-size:15px;font-weight:800;cursor:pointer">🖨️ Print / Save PDF</button>
           <button class="bs" onclick="set({inv:false})">Cancel</button>
@@ -392,8 +624,7 @@ function render(){
   document.getElementById("app").innerHTML=`
     <div class="hdr"><div class="hdr-in">
       <div class="logo-w"><img src="data:image/png;base64,${LOGO}" alt="Adhari"/>
-        <div>
-          <div class="co-n">Adhari Pharmaceuticals Pvt. Ltd.</div>
+        <div><div class="co-n">Adhari Pharmaceuticals Pvt. Ltd.</div>
           <div class="co-s">📞 ${CO.ph} | ✉ ${CO.em}</div>
           <div class="co-s2">GSTIN: ${CO.gs} | Drug Lic: ${CO.dr}</div>
         </div>
@@ -401,98 +632,62 @@ function render(){
       <div class="nav">${nb("list","📋","Orders")}${nb("form","➕","New")}${nb("catalog","⚙️","Products")}</div>
     </div></div>
     <div class="tgl">✦ ${CO.tg} ✦ <span style="font-size:10px;font-weight:700;color:${liveClr};margin-left:8px">${liveTxt}</span></div>
-    <div class="main">${html}</div>
-    ${mod}
-  `;
+    <div class="main">${html}</div>${mod}`;
 }
 
 // ===== ACTIONS =====
 function sv(v){S.view=v;if(v!=="form"){S.editId=null;S.form=bf();}render();}
 function tp(name){const p=S.catalog.find(x=>x.name===name);if(!p)return;const i=S.form.products.findIndex(x=>x.name===name);if(i>=0)S.form.products.splice(i,1);else S.form.products.push({...p,qty:1,bonus:""});render();}
 function rpo(name){S.form.products=S.form.products.filter(p=>p.name!==name);render();}
-function up(name,field,val){const p=S.form.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):val;}render();}
+function up(name,field,val){const p=S.form.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}render();}
 function vd(id){S.detail=S.orders.find(o=>o._id===id)||null;S.view="detail";render();}
 function se(id){const o=S.orders.find(x=>x._id===id);if(!o)return;S.form={...o,products:o.products.map(p=>({...p}))};S.editId=o._id;S.view="form";render();}
 
 async function so(){
   const f=S.form;
-  if(!f.doctorName||!f.phone||f.products.length===0)return;
+  const valid=(f.custType==="doctor"&&f.doctorName&&f.phone)||(f.custType==="store"&&f.storeName)||(f.custType==="both"&&f.doctorName&&f.storeName);
+  if(!valid||f.products.length===0)return;
   const data={...f,date:new Date().toLocaleDateString("en-IN"),createdAt:Date.now()};
   try{
-    if(S.editId){
-      const ex=S.orders.find(x=>x._id===S.editId);
-      if(ex){data.orderNo=ex.orderNo;data.date=ex.date;data.createdAt=ex.createdAt;}
-      await db.collection("orders").doc(S.editId).update(data);
-    } else {
-      data.orderNo="ADH-"+String(Date.now()).slice(-6);
-      await db.collection("orders").add(data);
-    }
-    toast("☁️ Order Saved!");
-    S.form=bf();S.pSearch="";S.pCat="All";S.editId=null;S.view="list";render();
-  }catch(e){toast("❌ Error: "+e.message);}
+    if(S.editId){const ex=S.orders.find(x=>x._id===S.editId);if(ex){data.orderNo=ex.orderNo;data.date=ex.date;data.createdAt=ex.createdAt;}await db.collection("orders").doc(S.editId).update(data);}
+    else{data.orderNo="ADH-"+String(Date.now()).slice(-6);await db.collection("orders").add(data);}
+    toast("☁️ Order Saved!");S.form=bf();S.pSearch="";S.pCat="All";S.editId=null;S.view="list";render();
+  }catch(e){toast("❌ "+e.message,"#ef4444");}
 }
-
-async function do2(id){
-  if(!confirm("Delete this order?"))return;
-  try{await db.collection("orders").doc(id).delete();toast("🗑️ Deleted");S.view="list";render();}
-  catch(e){toast("❌ Error: "+e.message);}
-}
-
+async function do2(id){if(!confirm("Delete this order?"))return;try{await db.collection("orders").doc(id).delete();toast("🗑️ Deleted");S.view="list";render();}catch(e){toast("❌ "+e.message,"#ef4444");}}
 async function ap(){
-  const n=S.newP.name.trim();
-  if(!n)return;
+  const n=S.newP.name.trim();if(!n)return;
   if(S.catalog.some(p=>p.name.toLowerCase()===n.toLowerCase())){S.catErr="Already exists!";render();return;}
-  try{await db.collection("catalog").add({...S.newP,name:n});toast("💊 Product Added!");S.newP={name:"",pack:"",mrp:"",cat:"General"};S.catErr="";render();}
-  catch(e){toast("❌ Error: "+e.message);}
+  try{await db.collection("catalog").add({...S.newP,name:n,gst:parseFloat(S.newP.gst||12)});toast("💊 Added!");S.newP={name:"",pack:"",mrp:"",cat:"General",gst:12};S.catErr="";render();}
+  catch(e){toast("❌ "+e.message,"#ef4444");}
 }
-
-async function rp(id,name){
-  if(!confirm("Remove "+name+"?"))return;
-  try{await db.collection("catalog").doc(id).delete();toast("🗑️ Removed");render();}
-  catch(e){toast("❌ Error: "+e.message);}
-}
-
+async function rp(id,name){if(!confirm("Remove "+name+"?"))return;try{await db.collection("catalog").doc(id).delete();toast("🗑️ Removed");render();}catch(e){toast("❌ "+e.message,"#ef4444");}}
 function oi(id){const o=S.orders.find(x=>x._id===id);if(!o)return;S.invOrd={...o,products:o.products.map(p=>({...p}))};S.invNo="INV-"+String(Date.now()).slice(-6);S.invDate=td();S.inv=true;render();}
-function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):val;}render();}
+function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}render();}
 function po(id){const o=S.orders.find(x=>x._id===id);if(o)pp(oHTML(o));}
-function pi(){if(S.invOrd)pp(iHTML(S.invOrd,S.invNo,S.invDate));}
+function pi(){if(S.invOrd)pp(iHTML(S.invOrd,S.invNo,S.invDate,S.gstType));}
 
 // ===== BOOT =====
 async function boot(){
-  try {
-    // Test connection
-    const testSnap = await db.collection("catalog").limit(1).get();
-    
-    // Seed catalog if empty
-    if(testSnap.empty){
-      document.getElementById("ld-msg").textContent = "Setting up for first time...";
-      for(const p of PRODS){
-        await db.collection("catalog").add(p);
-      }
+  try{
+    const snap=await db.collection("catalog").limit(1).get();
+    if(snap.empty){
+      document.getElementById("ld-msg").textContent="First time setup...";
+      for(const p of PRODS) await db.collection("catalog").add(p);
     }
-
-    // Live listeners
     db.collection("orders").orderBy("createdAt","desc").onSnapshot(snap=>{
       S.orders=snap.docs.map(d=>({...d.data(),_id:d.id}));
       S.live=true;
       document.getElementById("ld").style.display="none";
       document.getElementById("app").style.display="block";
       render();
-    },err=>{
-      document.getElementById("ld-msg").textContent="Error: "+err.message;
-    });
-
-    db.collection("catalog").onSnapshot(snap=>{
-      S.catalog=snap.docs.map(d=>({...d.data(),_id:d.id}));
-      render();
-    });
-
-  } catch(e) {
-    document.getElementById("ld-msg").textContent = "Failed: "+e.message;
-    document.getElementById("ld").innerHTML += `<button onclick="location.reload()" style="margin-top:20px;background:#fff;color:#0d1b4b;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:800;cursor:pointer">🔄 Retry</button>`;
+    },err=>document.getElementById("ld-msg").textContent="Error: "+err.message);
+    db.collection("catalog").onSnapshot(snap=>{S.catalog=snap.docs.map(d=>({...d.data(),_id:d.id}));render();});
+  }catch(e){
+    document.getElementById("ld-msg").textContent="Failed: "+e.message;
+    document.getElementById("ld").innerHTML+=`<button onclick="location.reload()" style="margin-top:20px;background:#fff;color:#0d1b4b;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:800;cursor:pointer">🔄 Retry</button>`;
   }
 }
-
 boot();
 </script>
 </body>
