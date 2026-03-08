@@ -884,23 +884,22 @@ async function boot(){
   const setMsg=m=>{ const el=document.getElementById("ld-msg"); if(el)el.textContent=m; };
   setMsg("Connecting to cloud...");
 
-  // Connection timeout — if no response in 12 seconds, show error
+  // Timeout — show error after 15 seconds
   const timeout=setTimeout(()=>{
     if(document.getElementById("ld").style.display!=="none"){
-      showLoadErr("Connection timed out. Check internet and try again.");
+      showLoadErr("Connection timed out. Check Firestore Rules are set to allow read, write: if true and published.");
     }
-  },12000);
+  },15000);
 
   try{
-    // Enable offline persistence so it works even with brief disconnects
-    try{ db.enablePersistence({synchronizeTabs:true}); }catch(e){}
-
-    // Start listeners immediately — don't wait for a one-time get()
-    // Orders listener
-    const u1=db.collection("orders").orderBy("createdAt","desc").onSnapshot(
+    // Orders — use simple snapshot WITHOUT orderBy to avoid index errors
+    const u1=db.collection("orders").onSnapshot(
       snap=>{
         clearTimeout(timeout);
-        S.orders=snap.docs.map(d=>({...d.data(),_id:d.id}));
+        // Sort locally by createdAt descending
+        S.orders=snap.docs
+          .map(d=>({...d.data(),_id:d.id}))
+          .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
         S.live=true;
         document.getElementById("ld").style.display="none";
         document.getElementById("app").style.display="block";
@@ -908,8 +907,10 @@ async function boot(){
       },
       err=>{
         clearTimeout(timeout);
-        showLoadErr("Orders error: "+err.message);
         _booted=false;
+        showLoadErr(err.message.includes("permission")||err.message.includes("Permission")
+          ? "Permission denied — Go to Firebase Console → Firestore → Rules → set: allow read, write: if true → Publish"
+          : "Orders error: "+err.message);
       }
     );
     _unsub.push(u1);
@@ -918,8 +919,10 @@ async function boot(){
     const u2=db.collection("catalog").onSnapshot(
       async snap=>{
         if(snap.empty){
-          setMsg("Setting up catalog...");
-          for(const p of PRODS) await db.collection("catalog").add(p);
+          setMsg("First time setup — adding medicines...");
+          try{
+            for(const p of PRODS) await db.collection("catalog").add(p);
+          }catch(e){ console.warn("Seed err:",e.message); }
         } else {
           S.catalog=snap.docs.map(d=>({...d.data(),_id:d.id}));
           render();
@@ -939,7 +942,7 @@ async function boot(){
   }catch(e){
     clearTimeout(timeout);
     _booted=false;
-    showLoadErr("Failed: "+e.message);
+    showLoadErr("Failed to start: "+e.message);
   }
 }
 
