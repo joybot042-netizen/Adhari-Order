@@ -291,8 +291,8 @@ let S={
 };
 
 function set(p){Object.assign(S,p);render();}
-function sf(k,v){S.form[k]=v;}
-function snp(k,v){S.newP[k]=v;}
+function sf(k,v){S.form[k]=v;} // no render - inputs handle their own value
+function snp(k,v){S.newP[k]=v;} // no render
 
 function toast(msg,clr){
   const t=document.getElementById("toast");
@@ -571,6 +571,27 @@ function iHTML(o, iNo, iDt, gstType) {
 }
 
 // ===== RENDER =====
+// Debounced render for search inputs — avoids keyboard dismiss on mobile
+let _renderTimer=null;
+function debounceRender(delay){
+  clearTimeout(_renderTimer);
+  _renderTimer=setTimeout(()=>{
+    // Re-render but restore focus to active input
+    const active=document.activeElement;
+    const activeId=active?active.id:null;
+    const activeVal=active?active.value:null;
+    const activeSel=active?[active.selectionStart,active.selectionEnd]:null;
+    render();
+    if(activeId){
+      const el=document.getElementById(activeId);
+      if(el){
+        el.focus();
+        try{if(activeSel)el.setSelectionRange(activeSel[0],activeSel[1]);}catch(e){}
+      }
+    }
+  }, delay||300);
+}
+
 function render(){
   const s=S;
   const uCats=["All",...new Set(s.catalog.map(p=>p.cat||"General"))];
@@ -613,7 +634,7 @@ function render(){
         </div>
       </div>`).join("");
     html=`<div style="display:flex;gap:10px;margin-bottom:14px;align-items:center">
-      <input class="inp" style="flex:1" placeholder="🔍 Search doctor, store, phone, city..." value="${s.search}" oninput="set({search:this.value})"/>
+      <input class="inp" id="inp-search" style="flex:1" placeholder="🔍 Search doctor, store, phone, city..." value="${s.search}" oninput="S.search=this.value;debounceRender()"/>
       <div style="background:#1a3a8f;color:#fff;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;white-space:nowrap">${filtO.length} Orders</div>
     </div>${cards}`;
   }
@@ -639,21 +660,15 @@ function render(){
     const dis=!((f.custType==="doctor"&&f.doctorName&&f.phone)||(f.custType==="store"&&f.storeName)||(f.custType==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
 
     // Customer type sections
-    const docDrop = s.showDocDrop && s.docSuggest.length>0
-      ? `<div style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #bfdbfe;border-radius:10px;box-shadow:0 8px 24px rgba(26,58,143,0.15);z-index:200;overflow:hidden;margin-top:2px">
-          ${s.docSuggest.map((ct,i)=>`<div onclick="fillDoctor(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f4ff;background:${i%2===0?'#fff':'#f8faff'};transition:background .1s" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='${i%2===0?'#fff':'#f8faff'}'">
-            <div style="font-weight:800;color:#0d1b4b;font-size:13px">👨‍⚕️ Dr. ${ct.doctorName}</div>
-            <div style="font-size:11px;color:#888">${ct.clinicName?ct.clinicName+" • ":""}${ct.phone?ct.phone:""}${ct.city?" • "+ct.city:""}</div>
-          </div>`).join("")}
-        </div>` : "";
+    // docDrop handled by updateDocDrop() — no re-render needed
 
     const doctorSection = (f.custType==="doctor"||f.custType==="both") ? `
       <div class="sec"><div class="stl">👨‍⚕️ Doctor Info</div>
         <div class="g2">
           <div style="position:relative">
             <label class="lbl">Doctor Name ${f.custType==="doctor"?"*":""}</label>
-            <input class="inp" value="${f.doctorName}" oninput="searchDoc(this.value)" placeholder="Type to search saved doctors..." autocomplete="off"/>
-            ${docDrop}
+            <input class="inp" id="inp-doctorName" value="${f.doctorName}" oninput="searchDoc(this.value)" onblur="setTimeout(()=>{S.showDocDrop=false;updateDocDrop();},200)" placeholder="Type to search saved doctors..." autocomplete="off"/>
+            <div id="doc-drop-container"></div>
           </div>
           <div><label class="lbl">Clinic / Hospital</label><input class="inp" value="${f.clinicName}" oninput="sf('clinicName',this.value)" placeholder="City Medical Centre"/></div>
           <div><label class="lbl">Phone ${f.custType==="doctor"?"*":""}</label><input class="inp" type="tel" value="${f.phone}" oninput="sf('phone',this.value)" placeholder="9876543210"/></div>
@@ -666,21 +681,15 @@ function render(){
         </div>
       </div>` : "";
 
-    const storeDrop = s.showStoreDrop && s.storeSuggest.length>0
-      ? `<div style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #86efac;border-radius:10px;box-shadow:0 8px 24px rgba(22,101,52,0.15);z-index:200;overflow:hidden;margin-top:2px">
-          ${s.storeSuggest.map((ct,i)=>`<div onclick="fillStore(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0fdf4;background:${i%2===0?'#fff':'#f0fdf4'}" onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='${i%2===0?'#fff':'#f0fdf4'}'">
-            <div style="font-weight:800;color:#166534;font-size:13px">🏪 ${ct.storeName}</div>
-            <div style="font-size:11px;color:#888">${ct.storeContact?ct.storeContact+"":""} ${ct.storeGstin?"• GSTIN: "+ct.storeGstin:""}</div>
-          </div>`).join("")}
-        </div>` : "";
+    // storeDrop handled by updateStoreDrop() — no re-render needed
 
     const storeSection = (f.custType==="store"||f.custType==="both") ? `
       <div class="sec3"><div class="stl">🏪 Medical Store Info</div>
         <div class="g2">
           <div style="position:relative">
             <label class="lbl">Store Name *</label>
-            <input class="inp" value="${f.storeName}" oninput="searchStore(this.value)" placeholder="Type to search saved stores..." autocomplete="off"/>
-            ${storeDrop}
+            <input class="inp" id="inp-storeName" value="${f.storeName}" oninput="searchStore(this.value)" onblur="setTimeout(()=>{S.showStoreDrop=false;updateStoreDrop();},200)" placeholder="Type to search saved stores..." autocomplete="off"/>
+            <div id="store-drop-container"></div>
           </div>
           <div><label class="lbl">Contact Number</label><input class="inp" type="tel" value="${f.storeContact}" oninput="sf('storeContact',this.value)" placeholder="9876543210"/></div>
           <div style="grid-column:span 2"><label class="lbl">Store Address</label><textarea class="inp" rows="2" oninput="sf('storeAddress',this.value)" style="resize:vertical">${f.storeAddress}</textarea></div>
@@ -716,7 +725,7 @@ function render(){
           <div class="stl" style="margin-bottom:0">💊 Products (${f.products.length})</div>
           <button onclick="sv('catalog')" style="font-size:11px;color:#1e40af;background:none;border:none;cursor:pointer;text-decoration:underline;font-weight:700">⚙️ Manage</button>
         </div>
-        <input class="inp" style="margin-bottom:8px" placeholder="🔍 Search medicines..." value="${s.pSearch}" oninput="set({pSearch:this.value})"/>
+        <input class="inp" id="inp-pSearch" style="margin-bottom:8px" placeholder="🔍 Search medicines..." value="${s.pSearch}" oninput="S.pSearch=this.value;debounceRender()"/>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${cBtns}</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto;padding:2px">${pBtns}</div>
       </div>
@@ -772,7 +781,7 @@ function render(){
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;border-bottom:2px solid #eff6ff;padding-bottom:14px;flex-wrap:wrap;gap:10px">
         <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:22px">👥</div>
         <div style="flex:1"><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">Contacts</h2><div style="color:#888;font-size:13px">${docs.length} doctors · ${stores.length} stores · Auto-saved from orders</div></div>
-        <input class="inp" style="width:220px" placeholder="🔍 Search..." value="${s.search}" oninput="set({search:this.value})"/>
+        <input class="inp" id="inp-csearch" style="width:220px" placeholder="🔍 Search..." value="${s.search}" oninput="S.search=this.value;debounceRender()"/>
       </div>
 
       <div style="background:#dbeafe;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#1e40af">
@@ -806,7 +815,7 @@ function render(){
       </div>
       <div class="sec2"><div class="stl">➕ Add Medicine</div>
         <div class="g2">
-          <div style="grid-column:span 2"><label class="lbl">Medicine Name *</label><input class="inp" value="${s.newP.name}" oninput="snp('name',this.value)" placeholder="e.g. Ashwagandha 500mg Cap" onkeydown="if(event.key==='Enter')ap()"/></div>
+          <div style="grid-column:span 2"><label class="lbl">Medicine Name *</label><input class="inp" id="inp-newPname" value="${s.newP.name}" oninput="snp('name',this.value)" placeholder="e.g. Ashwagandha 500mg Cap" onkeydown="if(event.key==='Enter')ap()"/></div>
           <div><label class="lbl">Pack Size</label><input class="inp" value="${s.newP.pack}" oninput="snp('pack',this.value)" placeholder="10x10"/></div>
           <div><label class="lbl">MRP ₹</label><input class="inp" type="number" value="${s.newP.mrp}" oninput="snp('mrp',this.value)" placeholder="0.00"/></div>
           <div><label class="lbl">Category</label><select class="inp" onchange="snp('cat',this.value)">${CATS.filter(c=>c!=="All").map(c=>`<option ${s.newP.cat===c?"selected":""}>${c}</option>`).join("")}</select></div>
@@ -820,7 +829,7 @@ function render(){
         <b>📋 GST Rates in India:</b> 0% — Ayurvedic/Exempt &nbsp;|&nbsp; 5% — Essential medicines (Paracetamol, Insulin etc.) &nbsp;|&nbsp; 12% — Most pharma &nbsp;|&nbsp; 18% — Supplements/Vitamins &nbsp;|&nbsp; 28% — Luxury health products
       </div>
 
-      <input class="inp" style="margin-bottom:12px" placeholder="🔍 Search medicines..." value="${s.catSearch}" oninput="set({catSearch:this.value})"/>
+      <input class="inp" id="inp-catSearch" style="margin-bottom:12px" placeholder="🔍 Search medicines..." value="${s.catSearch}" oninput="S.catSearch=this.value;debounceRender()"/>
       <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
         ${CATS.map(c=>`<button style="padding:3px 11px;border-radius:20px;font-size:11px;cursor:pointer;font-weight:700;border:1.5px solid;background:${s.pCat===c?"#0d1b4b":"#fff"};color:${s.pCat===c?"#fff":"#555"};border-color:${s.pCat===c?"#0d1b4b":"#ddd"}" onclick="set({pCat:'${c}'})">${c==="Ayurvedic"?"🌿 ":c==="Antiviral"?"🦠 ":""}${c}</button>`).join("")}
       </div>
@@ -921,8 +930,8 @@ function render(){
       </div>
       <div class="mbd">
         <div class="g2" style="margin-bottom:14px">
-          <div><label class="lbl">Invoice No</label><input class="inp" style="font-weight:700" value="${s.invNo}" oninput="set({invNo:this.value})"/></div>
-          <div><label class="lbl">Invoice Date</label><input class="inp" type="date" value="${s.invDate}" oninput="set({invDate:this.value})"/></div>
+          <div><label class="lbl">Invoice No</label><input class="inp" style="font-weight:700" value="${s.invNo}" id="inp-invNo" oninput="S.invNo=this.value"/></div>
+          <div><label class="lbl">Invoice Date</label><input class="inp" type="date" value="${s.invDate}" id="inp-invDate" oninput="S.invDate=this.value;renderGSTSummary()"/></div>
         </div>
 
         <div style="margin-bottom:14px">
@@ -979,11 +988,7 @@ function render(){
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div class="nav">${nb("list","📋","Orders")}${nb("form","➕","New")}${nb("contacts","👥","Contacts")}${nb("catalog","⚙️","Products")}</div>
-        <div class="user-badge" title="Signed in as admin" onclick="signOut()">
-          <div class="user-avatar">${window._currentUser&&window._currentUser.photoURL?`<img src="${window._currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover"/>`:window._currentUser?window._currentUser.email[0].toUpperCase():"A"}</div>
-          <span class="user-name">${window._currentUser?window._currentUser.displayName||window._currentUser.email.split("@")[0]:"Admin"}</span>
-          <button class="logout-btn" onclick="event.stopPropagation();signOut()">Sign Out</button>
-        </div>
+        <button onclick="signOut()" title="Sign out" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">🚪 Out</button>
       </div>
     </div></div>
     <div class="tgl">✦ ${CO.tg} ✦ <span style="font-size:10px;font-weight:700;color:${liveClr};margin-left:8px">${liveTxt}</span></div>
@@ -994,7 +999,7 @@ function render(){
 function sv(v){S.view=v;if(v!=="form"){S.editId=null;S.form=bf();}render();}
 function tp(name){const p=S.catalog.find(x=>x.name===name);if(!p)return;const i=S.form.products.findIndex(x=>x.name===name);if(i>=0)S.form.products.splice(i,1);else S.form.products.push({...p,qty:1,bonus:""});render();}
 function rpo(name){S.form.products=S.form.products.filter(p=>p.name!==name);render();}
-function up(name,field,val){const p=S.form.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}render();}
+function up(name,field,val){const p=S.form.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}}
 function vd(id){S.detail=S.orders.find(o=>o._id===id)||null;S.view="detail";render();}
 function se(id){const o=S.orders.find(x=>x._id===id);if(!o)return;S.form={...o,products:o.products.map(p=>({...p}))};S.editId=o._id;S.view="form";render();}
 
@@ -1018,7 +1023,7 @@ async function ap(){
 }
 async function rp(id,name){if(!confirm("Remove "+name+"?"))return;try{await db.collection("catalog").doc(id).delete();toast("🗑️ Removed");render();}catch(e){toast("❌ "+e.message,"#ef4444");}}
 function oi(id){const o=S.orders.find(x=>x._id===id);if(!o)return;S.invOrd={...o,products:o.products.map(p=>({...p}))};S.invNo="INV-"+String(Date.now()).slice(-6);S.invDate=td();S.inv=true;render();}
-function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}render();}
+function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}renderGSTSummary();}
 function po(id){const o=S.orders.find(x=>x._id===id);if(o)pp(oHTML(o));}
 function pi(){if(S.invOrd)pp(iHTML(S.invOrd,S.invNo,S.invDate,S.gstType));}
 
@@ -1068,7 +1073,8 @@ function searchDoc(val){
     S.docSuggest=S.contacts.filter(c=>c.type==="doctor"&&(c.doctorName||"").toLowerCase().includes(val.toLowerCase())).slice(0,6);
     S.showDocDrop=S.docSuggest.length>0;
   } else {S.showDocDrop=false;S.docSuggest=[];}
-  render();
+  // Only update the dropdown, not the whole form
+  updateDocDrop();
 }
 
 function searchStore(val){
@@ -1077,7 +1083,49 @@ function searchStore(val){
     S.storeSuggest=S.contacts.filter(c=>c.type==="store"&&(c.storeName||"").toLowerCase().includes(val.toLowerCase())).slice(0,6);
     S.showStoreDrop=S.storeSuggest.length>0;
   } else {S.showStoreDrop=false;S.storeSuggest=[];}
+  updateStoreDrop();
+}
+
+// Lightweight dropdown updaters — avoid full re-render while typing
+function updateDocDrop(){
+  const el=document.getElementById("doc-drop-container");
+  if(!el)return;
+  if(S.showDocDrop&&S.docSuggest.length>0){
+    el.innerHTML=`<div style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #bfdbfe;border-radius:10px;box-shadow:0 8px 24px rgba(26,58,143,0.15);z-index:200;overflow:hidden;margin-top:2px">
+      ${S.docSuggest.map((ct,i)=>`<div onclick="fillDoctor(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f4ff;background:${i%2===0?'#fff':'#f8faff'}">
+        <div style="font-weight:800;color:#0d1b4b;font-size:13px">👨‍⚕️ Dr. ${ct.doctorName}</div>
+        <div style="font-size:11px;color:#888">${ct.clinicName?ct.clinicName+" • ":""}${ct.phone||""}${ct.city?" • "+ct.city:""}</div>
+      </div>`).join("")}
+    </div>`;
+  } else { el.innerHTML=""; }
+}
+
+function updateStoreDrop(){
+  const el=document.getElementById("store-drop-container");
+  if(!el)return;
+  if(S.showStoreDrop&&S.storeSuggest.length>0){
+    el.innerHTML=`<div style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #86efac;border-radius:10px;box-shadow:0 8px 24px rgba(22,101,52,0.15);z-index:200;overflow:hidden;margin-top:2px">
+      ${S.storeSuggest.map((ct,i)=>`<div onclick="fillStore(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0fdf4;background:${i%2===0?'#fff':'#f0fdf4'}">
+        <div style="font-weight:800;color:#166534;font-size:13px">🏪 ${ct.storeName}</div>
+        <div style="font-size:11px;color:#888">${ct.storeContact||""} ${ct.storeGstin?"• GSTIN: "+ct.storeGstin:""}</div>
+      </div>`).join("")}
+    </div>`;
+  } else { el.innerHTML=""; }
+}
+
+// Lightweight GST summary updater for invoice modal (no full re-render)
+function renderGSTSummary(){
+  // Just trigger a re-render of the modal total section when qty/mrp/gst changes
+  // We need full render here since totals depend on all products
+  // But we restore focus after
+  const active=document.activeElement;
+  const activeId=active?active.id:null;
+  const activeSel=active?[active.selectionStart,active.selectionEnd]:null;
   render();
+  if(activeId){
+    const el=document.getElementById(activeId);
+    if(el){el.focus();try{if(activeSel)el.setSelectionRange(activeSel[0],activeSel[1]);}catch(e){}}
+  }
 }
 
 async function delContact(id){
