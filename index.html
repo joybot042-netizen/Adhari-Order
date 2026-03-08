@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans','Segoe UI',sans-serif;background:#f0f4ff;min-height:100vh}
@@ -82,6 +83,27 @@ tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}
   .nav{width:100%}
   .nb{flex:1;text-align:center;font-size:11px;padding:6px 4px}
 }
+
+/* ===== AUTH STYLES ===== */
+.auth-wrap{position:fixed;inset:0;background:linear-gradient(135deg,#0d1b4b 0%,#1a3a8f 50%,#2563eb 100%);display:flex;align-items:center;justify-content:center;z-index:9998;padding:16px}
+.auth-box{background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,0.4)}
+.auth-logo{text-align:center;margin-bottom:20px}
+.auth-logo img{height:64px;filter:drop-shadow(0 4px 8px rgba(13,27,75,0.2))}
+.auth-title{text-align:center;font-size:20px;font-weight:800;color:#0d1b4b;margin-bottom:4px}
+.auth-sub{text-align:center;font-size:13px;color:#888;margin-bottom:24px}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#ccc;font-size:12px}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:#e5e7eb}
+.google-btn{width:100%;padding:13px;border:2px solid #e5e7eb;border-radius:12px;background:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:#333;transition:all .2s}
+.google-btn:hover{border-color:#4285f4;background:#f8f9ff}
+.auth-err{background:#fce4ec;color:#c62828;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;margin-bottom:12px;text-align:center;display:none}
+.auth-info{background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:11px;color:#1e40af;margin-top:16px;text-align:center}
+.auth-forget{font-size:11px;color:#888;text-align:center;margin-top:12px;cursor:pointer}
+.auth-forget span{color:#1e40af;text-decoration:underline;cursor:pointer}
+/* User badge in header */
+.user-badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;cursor:pointer}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);object-fit:cover;background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#0d1b4b;overflow:hidden}
+.user-name{color:#fff;font-size:12px;font-weight:700;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -147,6 +169,100 @@ const GST_OPTS=[0,5,12,18,28];
 
 if(!firebase.apps.length) firebase.initializeApp(FB);
 const db=firebase.firestore();
+const auth=firebase.auth();
+const googleProvider=new firebase.auth.GoogleAuthProvider();
+
+// ===== ADMIN CONFIG =====
+// Only this email can access the app
+const ADMIN_EMAIL="adharipharmaceuticals@gmail.com";
+
+// ===== AUTH FUNCTIONS =====
+function showAuthErr(msg){
+  const el=document.getElementById("auth-err");
+  el.textContent="⚠️ "+msg;el.style.display="block";
+}
+function hideAuthErr(){
+  const el=document.getElementById("auth-err");
+  if(el)el.style.display="none";
+}
+
+function togglePwd(){
+  const p=document.getElementById("login-pass");
+  const e=document.getElementById("pwd-eye");
+  if(p.type==="password"){p.type="text";e.textContent="🙈";}
+  else{p.type="password";e.textContent="👁️";}
+}
+
+async function signInGoogle(){
+  hideAuthErr();
+  try{
+    const result=await auth.signInWithPopup(googleProvider);
+    if(result.user.email!==ADMIN_EMAIL){
+      await auth.signOut();
+      showAuthErr("Access denied. Only the admin account can log in.");
+    }
+  }catch(e){
+    if(e.code!=="auth/popup-closed-by-user") showAuthErr(e.message);
+  }
+}
+
+async function signInEmail(){
+  hideAuthErr();
+  const email=document.getElementById("login-email").value.trim();
+  const pass=document.getElementById("login-pass").value;
+  if(!email||!pass){showAuthErr("Please enter email and password.");return;}
+  if(email!==ADMIN_EMAIL){showAuthErr("Access denied. Only the admin account can log in.");return;}
+  try{
+    await auth.signInWithEmailAndPassword(email,pass);
+  }catch(e){
+    const msgs={"auth/wrong-password":"Incorrect password. Try again.","auth/user-not-found":"No account found. Check your email.","auth/invalid-email":"Invalid email address.","auth/too-many-requests":"Too many attempts. Try again later."};
+    showAuthErr(msgs[e.code]||e.message);
+  }
+}
+
+async function signOut(){
+  if(!confirm("Sign out?"))return;
+  await auth.signOut();
+}
+
+function showForgot(){
+  const m=document.getElementById("forgot-modal");
+  m.style.display="flex";
+  const fe=document.getElementById("forgot-email");
+  if(fe) fe.value=document.getElementById("login-email").value||"";
+}
+
+async function sendReset(){
+  const email=document.getElementById("forgot-email").value.trim();
+  const msg=document.getElementById("forgot-msg");
+  if(!email){msg.textContent="Please enter your email.";msg.style.color="#c62828";msg.style.display="block";return;}
+  try{
+    await auth.sendPasswordResetEmail(email);
+    msg.textContent="✅ Reset link sent! Check your inbox.";msg.style.color="#166534";msg.style.display="block";
+    setTimeout(()=>document.getElementById("forgot-modal").style.display="none",3000);
+  }catch(e){
+    msg.textContent="❌ "+e.message;msg.style.color="#c62828";msg.style.display="block";
+  }
+}
+
+// ===== AUTH STATE LISTENER =====
+auth.onAuthStateChanged(user=>{
+  if(user&&user.email===ADMIN_EMAIL){
+    // Logged in as admin — hide login, show app
+    document.getElementById("auth-screen").style.display="none";
+    document.getElementById("ld").style.display="flex";
+    document.getElementById("app").style.display="none";
+    // Update user badge in header
+    window._currentUser=user;
+    boot();
+  } else {
+    // Not logged in — show login screen, hide everything else
+    document.getElementById("auth-screen").style.display="flex";
+    document.getElementById("ld").style.display="none";
+    document.getElementById("app").style.display="none";
+    window._currentUser=null;
+  }
+});
 
 function bf(){return{
   // Customer type: "doctor" or "store" or "both"
@@ -162,14 +278,16 @@ function fdt(d){try{return new Date(d).toLocaleDateString("en-IN",{day:"2-digit"
 function subAmt(ps){return ps.reduce((s,p)=>s+parseFloat(p.mrp||0)*parseInt(p.qty||1),0);}
 
 let S={
-  view:"list",orders:[],catalog:[],
+  view:"list",orders:[],catalog:[],contacts:[],
   search:"",editId:null,detail:null,
   form:bf(),pSearch:"",pCat:"All",
   newP:{name:"",pack:"",mrp:"",cat:"General",gst:12},
   catSearch:"",catErr:"",
   inv:false,invOrd:null,invNo:"",invDate:td(),
-  gstType:"cgst", // cgst | igst
-  live:false
+  gstType:"cgst",
+  live:false,
+  // Contact search/suggest
+  docSuggest:[],storeSuggest:[],showDocDrop:false,showStoreDrop:false
 };
 
 function set(p){Object.assign(S,p);render();}
@@ -255,7 +373,82 @@ function oHTML(o){
     : o.custType==="both"
     ? `Dr. ${o.doctorName} / ${o.storeName||""} | 📞 ${o.phone||""}`
     : `Dr. ${o.doctorName}${o.clinicName?" | "+o.clinicName:""}${o.phone?" | 📞 "+o.phone:""}`;
-  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>${billTo}</b></p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* ===== AUTH STYLES ===== */
+.auth-wrap{position:fixed;inset:0;background:linear-gradient(135deg,#0d1b4b 0%,#1a3a8f 50%,#2563eb 100%);display:flex;align-items:center;justify-content:center;z-index:9998;padding:16px}
+.auth-box{background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,0.4)}
+.auth-logo{text-align:center;margin-bottom:20px}
+.auth-logo img{height:64px;filter:drop-shadow(0 4px 8px rgba(13,27,75,0.2))}
+.auth-title{text-align:center;font-size:20px;font-weight:800;color:#0d1b4b;margin-bottom:4px}
+.auth-sub{text-align:center;font-size:13px;color:#888;margin-bottom:24px}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#ccc;font-size:12px}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:#e5e7eb}
+.google-btn{width:100%;padding:13px;border:2px solid #e5e7eb;border-radius:12px;background:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:#333;transition:all .2s}
+.google-btn:hover{border-color:#4285f4;background:#f8f9ff}
+.auth-err{background:#fce4ec;color:#c62828;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;margin-bottom:12px;text-align:center;display:none}
+.auth-info{background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:11px;color:#1e40af;margin-top:16px;text-align:center}
+.auth-forget{font-size:11px;color:#888;text-align:center;margin-top:12px;cursor:pointer}
+.auth-forget span{color:#1e40af;text-decoration:underline;cursor:pointer}
+/* User badge in header */
+.user-badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;cursor:pointer}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);object-fit:cover;background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#0d1b4b;overflow:hidden}
+.user-name{color:#fff;font-size:12px;font-weight:700;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
+</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>${billTo}</b></p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div>
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="auth-wrap" id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img id="auth-logo-img" src="" alt="Adhari" style="height:64px;filter:drop-shadow(0 4px 8px rgba(13,27,75,0.2))"/>
+    </div>
+    <div class="auth-title">Adhari Pharmaceuticals</div>
+    <div class="auth-sub">Sign in to access your orders dashboard</div>
+
+    <div class="auth-err" id="auth-err"></div>
+
+    <!-- Google Sign In -->
+    <button class="google-btn" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-divider">or sign in with email</div>
+
+    <!-- Email/Password -->
+    <div style="margin-bottom:12px">
+      <label class="lbl">Email</label>
+      <input class="inp" type="email" id="login-email" placeholder="adharipharmaceuticals@gmail.com" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="lbl">Password</label>
+      <div style="position:relative">
+        <input class="inp" type="password" id="login-pass" placeholder="Enter your password" style="padding-right:44px" onkeydown="if(event.key==='Enter')signInEmail()"/>
+        <button onclick="togglePwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px" id="pwd-eye">👁️</button>
+      </div>
+    </div>
+    <button onclick="signInEmail()" style="width:100%;padding:13px;background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px">🔐 Sign In</button>
+
+    <div class="auth-forget">Forgot password? <span onclick="showForgot()">Reset via email</span></div>
+
+    <div class="auth-info">🔒 Access restricted to authorized admin only.<br/>Contact Adhari admin if you need access.</div>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:18px;padding:28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <h3 style="color:#0d1b4b;margin-bottom:6px;font-size:17px">🔑 Reset Password</h3>
+    <p style="color:#888;font-size:13px;margin-bottom:16px">Enter your email and we'll send a reset link.</p>
+    <input class="inp" type="email" id="forgot-email" placeholder="your@email.com" style="margin-bottom:12px"/>
+    <div id="forgot-msg" style="font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="sendReset()" style="flex:1;background:#0d1b4b;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:800;cursor:pointer">Send Reset Link</button>
+      <button onclick="document.getElementById('forgot-modal').style.display='none'" style="padding:11px 16px;background:transparent;color:#888;border:1.5px solid #ddd;border-radius:10px;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</body></html>`;
 }
 
 function iHTML(o, iNo, iDt, gstType) {
@@ -282,7 +475,28 @@ function iHTML(o, iNo, iDt, gstType) {
     billToHTML = `<div class="pn">Dr. ${o.doctorName}</div><div class="ps">${o.clinicName?o.clinicName+"<br/>":""}${[o.area,o.city,o.pincode].filter(Boolean).join(", ")}${o.phone?"<br/>📞 "+o.phone:""}</div>`;
   }
 
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:10mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.ib{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:10px 16px;margin:12px 0;display:flex;justify-content:space-between}.ib h2{font-size:18px;font-weight:800;letter-spacing:2px}.im{font-size:12px;line-height:1.8;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:12px;font-size:11px;color:#1e40af;display:flex;gap:24px}.pts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.pb{border:1px solid #dbeafe;border-radius:8px;padding:10px 14px;background:#f8faff}.pt{font-size:10px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;border-bottom:1px solid #dbeafe;padding-bottom:4px}.pn{font-size:13px;font-weight:800;color:#0d1b4b;margin-bottom:2px}.ps{font-size:11px;color:#555;line-height:1.6}table{width:100%;border-collapse:collapse;margin-bottom:10px}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f8faff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #e0ecff}.gtbl{width:100%;border-collapse:collapse;margin-bottom:10px;background:#f8faff}.gtbl th{background:#1e40af;color:#fff;padding:6px 10px;font-size:11px;text-align:right}.gtbl th:first-child{text-align:left}.gtbl td{padding:6px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.tb2{margin-left:auto;width:260px;margin-bottom:12px}.tr2{display:flex;justify-content:space-between;padding:5px 10px;font-size:12px}.ts{background:#f0f4ff;border-radius:4px}.tgd{background:#0d1b4b;color:#fff;border-radius:6px;padding:8px 14px;font-weight:800;font-size:14px;margin-top:4px}.terms{background:#f0f4ff;border-radius:6px;padding:7px 12px;margin-bottom:10px;font-size:10px;color:#555;line-height:1.6}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:8px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:140px;margin-top:38px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="pg">
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px}.pg{width:210mm;padding:10mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.ib{background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border-radius:8px;padding:10px 16px;margin:12px 0;display:flex;justify-content:space-between}.ib h2{font-size:18px;font-weight:800;letter-spacing:2px}.im{font-size:12px;line-height:1.8;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:12px;font-size:11px;color:#1e40af;display:flex;gap:24px}.pts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.pb{border:1px solid #dbeafe;border-radius:8px;padding:10px 14px;background:#f8faff}.pt{font-size:10px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;border-bottom:1px solid #dbeafe;padding-bottom:4px}.pn{font-size:13px;font-weight:800;color:#0d1b4b;margin-bottom:2px}.ps{font-size:11px;color:#555;line-height:1.6}table{width:100%;border-collapse:collapse;margin-bottom:10px}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f8faff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #e0ecff}.gtbl{width:100%;border-collapse:collapse;margin-bottom:10px;background:#f8faff}.gtbl th{background:#1e40af;color:#fff;padding:6px 10px;font-size:11px;text-align:right}.gtbl th:first-child{text-align:left}.gtbl td{padding:6px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.tb2{margin-left:auto;width:260px;margin-bottom:12px}.tr2{display:flex;justify-content:space-between;padding:5px 10px;font-size:12px}.ts{background:#f0f4ff;border-radius:4px}.tgd{background:#0d1b4b;color:#fff;border-radius:6px;padding:8px 14px;font-weight:800;font-size:14px;margin-top:4px}.terms{background:#f0f4ff;border-radius:6px;padding:7px 12px;margin-bottom:10px;font-size:10px;color:#555;line-height:1.6}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:8px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:140px;margin-top:38px;font-size:11px;padding-top:4px;text-align:center}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* ===== AUTH STYLES ===== */
+.auth-wrap{position:fixed;inset:0;background:linear-gradient(135deg,#0d1b4b 0%,#1a3a8f 50%,#2563eb 100%);display:flex;align-items:center;justify-content:center;z-index:9998;padding:16px}
+.auth-box{background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,0.4)}
+.auth-logo{text-align:center;margin-bottom:20px}
+.auth-logo img{height:64px;filter:drop-shadow(0 4px 8px rgba(13,27,75,0.2))}
+.auth-title{text-align:center;font-size:20px;font-weight:800;color:#0d1b4b;margin-bottom:4px}
+.auth-sub{text-align:center;font-size:13px;color:#888;margin-bottom:24px}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#ccc;font-size:12px}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:#e5e7eb}
+.google-btn{width:100%;padding:13px;border:2px solid #e5e7eb;border-radius:12px;background:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:#333;transition:all .2s}
+.google-btn:hover{border-color:#4285f4;background:#f8f9ff}
+.auth-err{background:#fce4ec;color:#c62828;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;margin-bottom:12px;text-align:center;display:none}
+.auth-info{background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:11px;color:#1e40af;margin-top:16px;text-align:center}
+.auth-forget{font-size:11px;color:#888;text-align:center;margin-top:12px;cursor:pointer}
+.auth-forget span{color:#1e40af;text-decoration:underline;cursor:pointer}
+/* User badge in header */
+.user-badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);border-radius:10px;padding:6px 12px;cursor:pointer}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);object-fit:cover;background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#0d1b4b;overflow:hidden}
+.user-name{color:#fff;font-size:12px;font-weight:700;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
+</style></head><body><div class="pg">
 <div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div>
 <div class="ib"><h2>TAX INVOICE</h2><div class="im"><div><b>Invoice No:</b> ${iNo}</div><div><b>Date:</b> ${fdt(iDt)}</div><div><b>Order:</b> ${o.orderNo}</div><div><b>GST Type:</b> ${gstType.toUpperCase()}</div></div></div>
 <div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div>
@@ -299,7 +513,61 @@ function iHTML(o, iNo, iDt, gstType) {
 </div>
 <div class="terms"><b>Terms:</b> Goods once sold will not be taken back. Subject to Mumbai jurisdiction. Payment due within 30 days.</div>
 <div class="ft"><div><b style="color:#0d1b4b">${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div>
-</div></body></html>`;
+</div>
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="auth-wrap" id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img id="auth-logo-img" src="" alt="Adhari" style="height:64px;filter:drop-shadow(0 4px 8px rgba(13,27,75,0.2))"/>
+    </div>
+    <div class="auth-title">Adhari Pharmaceuticals</div>
+    <div class="auth-sub">Sign in to access your orders dashboard</div>
+
+    <div class="auth-err" id="auth-err"></div>
+
+    <!-- Google Sign In -->
+    <button class="google-btn" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-divider">or sign in with email</div>
+
+    <!-- Email/Password -->
+    <div style="margin-bottom:12px">
+      <label class="lbl">Email</label>
+      <input class="inp" type="email" id="login-email" placeholder="adharipharmaceuticals@gmail.com" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="lbl">Password</label>
+      <div style="position:relative">
+        <input class="inp" type="password" id="login-pass" placeholder="Enter your password" style="padding-right:44px" onkeydown="if(event.key==='Enter')signInEmail()"/>
+        <button onclick="togglePwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px" id="pwd-eye">👁️</button>
+      </div>
+    </div>
+    <button onclick="signInEmail()" style="width:100%;padding:13px;background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px">🔐 Sign In</button>
+
+    <div class="auth-forget">Forgot password? <span onclick="showForgot()">Reset via email</span></div>
+
+    <div class="auth-info">🔒 Access restricted to authorized admin only.<br/>Contact Adhari admin if you need access.</div>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:18px;padding:28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <h3 style="color:#0d1b4b;margin-bottom:6px;font-size:17px">🔑 Reset Password</h3>
+    <p style="color:#888;font-size:13px;margin-bottom:16px">Enter your email and we'll send a reset link.</p>
+    <input class="inp" type="email" id="forgot-email" placeholder="your@email.com" style="margin-bottom:12px"/>
+    <div id="forgot-msg" style="font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="sendReset()" style="flex:1;background:#0d1b4b;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:800;cursor:pointer">Send Reset Link</button>
+      <button onclick="document.getElementById('forgot-modal').style.display='none'" style="padding:11px 16px;background:transparent;color:#888;border:1.5px solid #ddd;border-radius:10px;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</body></html>`;
 }
 
 // ===== RENDER =====
@@ -371,10 +639,22 @@ function render(){
     const dis=!((f.custType==="doctor"&&f.doctorName&&f.phone)||(f.custType==="store"&&f.storeName)||(f.custType==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
 
     // Customer type sections
+    const docDrop = s.showDocDrop && s.docSuggest.length>0
+      ? `<div style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #bfdbfe;border-radius:10px;box-shadow:0 8px 24px rgba(26,58,143,0.15);z-index:200;overflow:hidden;margin-top:2px">
+          ${s.docSuggest.map((ct,i)=>`<div onclick="fillDoctor(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f4ff;background:${i%2===0?'#fff':'#f8faff'};transition:background .1s" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='${i%2===0?'#fff':'#f8faff'}'">
+            <div style="font-weight:800;color:#0d1b4b;font-size:13px">👨‍⚕️ Dr. ${ct.doctorName}</div>
+            <div style="font-size:11px;color:#888">${ct.clinicName?ct.clinicName+" • ":""}${ct.phone?ct.phone:""}${ct.city?" • "+ct.city:""}</div>
+          </div>`).join("")}
+        </div>` : "";
+
     const doctorSection = (f.custType==="doctor"||f.custType==="both") ? `
       <div class="sec"><div class="stl">👨‍⚕️ Doctor Info</div>
         <div class="g2">
-          <div><label class="lbl">Doctor Name ${f.custType==="doctor"?"*":""}</label><input class="inp" value="${f.doctorName}" oninput="sf('doctorName',this.value)" placeholder="e.g. Rajesh Sharma"/></div>
+          <div style="position:relative">
+            <label class="lbl">Doctor Name ${f.custType==="doctor"?"*":""}</label>
+            <input class="inp" value="${f.doctorName}" oninput="searchDoc(this.value)" placeholder="Type to search saved doctors..." autocomplete="off"/>
+            ${docDrop}
+          </div>
           <div><label class="lbl">Clinic / Hospital</label><input class="inp" value="${f.clinicName}" oninput="sf('clinicName',this.value)" placeholder="City Medical Centre"/></div>
           <div><label class="lbl">Phone ${f.custType==="doctor"?"*":""}</label><input class="inp" type="tel" value="${f.phone}" oninput="sf('phone',this.value)" placeholder="9876543210"/></div>
           <div><label class="lbl">Email</label><input class="inp" type="email" value="${f.email}" oninput="sf('email',this.value)" placeholder="doctor@email.com"/></div>
@@ -386,10 +666,22 @@ function render(){
         </div>
       </div>` : "";
 
+    const storeDrop = s.showStoreDrop && s.storeSuggest.length>0
+      ? `<div style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #86efac;border-radius:10px;box-shadow:0 8px 24px rgba(22,101,52,0.15);z-index:200;overflow:hidden;margin-top:2px">
+          ${s.storeSuggest.map((ct,i)=>`<div onclick="fillStore(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0fdf4;background:${i%2===0?'#fff':'#f0fdf4'}" onmouseover="this.style.background='#bbf7d0'" onmouseout="this.style.background='${i%2===0?'#fff':'#f0fdf4'}'">
+            <div style="font-weight:800;color:#166534;font-size:13px">🏪 ${ct.storeName}</div>
+            <div style="font-size:11px;color:#888">${ct.storeContact?ct.storeContact+"":""} ${ct.storeGstin?"• GSTIN: "+ct.storeGstin:""}</div>
+          </div>`).join("")}
+        </div>` : "";
+
     const storeSection = (f.custType==="store"||f.custType==="both") ? `
       <div class="sec3"><div class="stl">🏪 Medical Store Info</div>
         <div class="g2">
-          <div><label class="lbl">Store Name *</label><input class="inp" value="${f.storeName}" oninput="sf('storeName',this.value)" placeholder="e.g. Sharma Medical Store"/></div>
+          <div style="position:relative">
+            <label class="lbl">Store Name *</label>
+            <input class="inp" value="${f.storeName}" oninput="searchStore(this.value)" placeholder="Type to search saved stores..." autocomplete="off"/>
+            ${storeDrop}
+          </div>
           <div><label class="lbl">Contact Number</label><input class="inp" type="tel" value="${f.storeContact}" oninput="sf('storeContact',this.value)" placeholder="9876543210"/></div>
           <div style="grid-column:span 2"><label class="lbl">Store Address</label><textarea class="inp" rows="2" oninput="sf('storeAddress',this.value)" style="resize:vertical">${f.storeAddress}</textarea></div>
           <div><label class="lbl">Store GSTIN</label><input class="inp" value="${f.storeGstin}" oninput="sf('storeGstin',this.value)" placeholder="27XXXXX"/></div>
@@ -439,7 +731,63 @@ function render(){
   }
 
   // ---- CATALOG ----
-  else if(s.view==="catalog"){
+  else if(s.view==="contacts"){
+    const docs=S.contacts.filter(c=>c.type==="doctor").sort((a,b)=>(a.doctorName||"").localeCompare(b.doctorName||""));
+    const stores=S.contacts.filter(c=>c.type==="store").sort((a,b)=>(a.storeName||"").localeCompare(b.storeName||""));
+    const cSearch=(s.search||"").toLowerCase();
+    const filtDocs=docs.filter(c=>[c.doctorName,c.phone,c.city,c.clinicName].join(" ").toLowerCase().includes(cSearch));
+    const filtStores=stores.filter(c=>[c.storeName,c.storeContact,c.storeGstin].join(" ").toLowerCase().includes(cSearch));
+
+    const docCards=filtDocs.length===0
+      ?`<div style="text-align:center;padding:20px;color:#bbb;font-size:13px">No doctor contacts yet. They save automatically when you create an order.</div>`
+      :filtDocs.map((ct,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:${i%2===0?"#f8faff":"#fff"};border:1.5px solid #dbeafe;margin-bottom:8px;gap:10px">
+        <div style="flex:1">
+          <div style="font-weight:800;color:#0d1b4b;font-size:15px">👨‍⚕️ Dr. ${ct.doctorName}</div>
+          <div style="font-size:12px;color:#666;margin-top:3px">${ct.clinicName?"🏥 "+ct.clinicName+" ":""} ${ct.phone?"📞 "+ct.phone:""} ${ct.city?"📍 "+ct.city:""}</div>
+          ${ct.email?`<div style="font-size:11px;color:#888">✉️ ${ct.email}</div>`:""}
+          ${ct.area||ct.pincode?`<div style="font-size:11px;color:#aaa">${[ct.area,ct.city,ct.pincode].filter(Boolean).join(", ")}</div>`:""}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="sv('form');sf('custType','doctor');fillDoctor(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="background:#0d1b4b;color:#fff;border:none;border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-weight:700">➕ New Order</button>
+          <button onclick="delContact('${ct._id}')" style="background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer">🗑️</button>
+        </div>
+      </div>`).join("");
+
+    const storeCards=filtStores.length===0
+      ?`<div style="text-align:center;padding:20px;color:#bbb;font-size:13px">No store contacts yet. They save automatically when you create an order.</div>`
+      :filtStores.map((ct,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:${i%2===0?"#f0fdf4":"#fff"};border:1.5px solid #86efac;margin-bottom:8px;gap:10px">
+        <div style="flex:1">
+          <div style="font-weight:800;color:#166534;font-size:15px">🏪 ${ct.storeName}</div>
+          <div style="font-size:12px;color:#666;margin-top:3px">${ct.storeContact?"📞 "+ct.storeContact:""}</div>
+          ${ct.storeGstin?`<div style="font-size:11px;color:#888">GSTIN: ${ct.storeGstin}</div>`:""}
+          ${ct.storeAddress?`<div style="font-size:11px;color:#aaa">📍 ${ct.storeAddress}</div>`:""}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="sv('form');sf('custType','store');fillStore(${JSON.stringify(ct).replace(/"/g,'&quot;')})" style="background:#166534;color:#fff;border:none;border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-weight:700">➕ New Order</button>
+          <button onclick="delContact('${ct._id}')" style="background:#fce4ec;color:#c62828;border:1px solid #ef9a9a;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer">🗑️</button>
+        </div>
+      </div>`).join("");
+
+    html=`<div class="box">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;border-bottom:2px solid #eff6ff;padding-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:22px">👥</div>
+        <div style="flex:1"><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">Contacts</h2><div style="color:#888;font-size:13px">${docs.length} doctors · ${stores.length} stores · Auto-saved from orders</div></div>
+        <input class="inp" style="width:220px" placeholder="🔍 Search..." value="${s.search}" oninput="set({search:this.value})"/>
+      </div>
+
+      <div style="background:#dbeafe;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#1e40af">
+        💡 <b>Auto-save:</b> Doctor and store details are saved automatically every time you create or update an order. Tap <b>➕ New Order</b> to instantly start an order with that contact's details filled in.
+      </div>
+
+      <div style="font-weight:800;color:#0d1b4b;font-size:13px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">👨‍⚕️ Doctors (${filtDocs.length})</div>
+      <div style="max-height:320px;overflow-y:auto;margin-bottom:20px">${docCards}</div>
+
+      <div style="font-weight:800;color:#166534;font-size:13px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">🏪 Medical Stores (${filtStores.length})</div>
+      <div style="max-height:280px;overflow-y:auto">${storeCards}</div>
+    </div>`;
+  }
+
+    else if(s.view==="catalog"){
     const rows=filtC.map((p,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:${i%2===0?"#f8faff":"#fff"};border:1px solid #dbeafe;margin-bottom:6px">
       <div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -629,7 +977,14 @@ function render(){
           <div class="co-s2">GSTIN: ${CO.gs} | Drug Lic: ${CO.dr}</div>
         </div>
       </div>
-      <div class="nav">${nb("list","📋","Orders")}${nb("form","➕","New")}${nb("catalog","⚙️","Products")}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="nav">${nb("list","📋","Orders")}${nb("form","➕","New")}${nb("contacts","👥","Contacts")}${nb("catalog","⚙️","Products")}</div>
+        <div class="user-badge" title="Signed in as admin" onclick="signOut()">
+          <div class="user-avatar">${window._currentUser&&window._currentUser.photoURL?`<img src="${window._currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover"/>`:window._currentUser?window._currentUser.email[0].toUpperCase():"A"}</div>
+          <span class="user-name">${window._currentUser?window._currentUser.displayName||window._currentUser.email.split("@")[0]:"Admin"}</span>
+          <button class="logout-btn" onclick="event.stopPropagation();signOut()">Sign Out</button>
+        </div>
+      </div>
     </div></div>
     <div class="tgl">✦ ${CO.tg} ✦ <span style="font-size:10px;font-weight:700;color:${liveClr};margin-left:8px">${liveTxt}</span></div>
     <div class="main">${html}</div>${mod}`;
@@ -651,7 +1006,7 @@ async function so(){
   try{
     if(S.editId){const ex=S.orders.find(x=>x._id===S.editId);if(ex){data.orderNo=ex.orderNo;data.date=ex.date;data.createdAt=ex.createdAt;}await db.collection("orders").doc(S.editId).update(data);}
     else{data.orderNo="ADH-"+String(Date.now()).slice(-6);await db.collection("orders").add(data);}
-    toast("☁️ Order Saved!");S.form=bf();S.pSearch="";S.pCat="All";S.editId=null;S.view="list";render();
+    await saveContactFromOrder(f);toast("☁️ Order Saved!");S.form=bf();S.pSearch="";S.pCat="All";S.editId=null;S.view="list";render();
   }catch(e){toast("❌ "+e.message,"#ef4444");}
 }
 async function do2(id){if(!confirm("Delete this order?"))return;try{await db.collection("orders").doc(id).delete();toast("🗑️ Deleted");S.view="list";render();}catch(e){toast("❌ "+e.message,"#ef4444");}}
@@ -666,6 +1021,70 @@ function oi(id){const o=S.orders.find(x=>x._id===id);if(!o)return;S.invOrd={...o
 function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}render();}
 function po(id){const o=S.orders.find(x=>x._id===id);if(o)pp(oHTML(o));}
 function pi(){if(S.invOrd)pp(iHTML(S.invOrd,S.invNo,S.invDate,S.gstType));}
+
+// ===== CONTACT HELPERS =====
+async function saveContactFromOrder(f){
+  // Auto-save doctor contact
+  if((f.custType==="doctor"||f.custType==="both")&&f.doctorName&&f.phone){
+    const exists=S.contacts.find(c=>c.type==="doctor"&&c.phone===f.phone);
+    const data={type:"doctor",doctorName:f.doctorName,clinicName:f.clinicName||"",phone:f.phone,email:f.email||"",address:f.address||"",area:f.area||"",city:f.city||"",pincode:f.pincode||"",updatedAt:Date.now()};
+    if(exists) await db.collection("contacts").doc(exists._id).update(data);
+    else await db.collection("contacts").add({...data,createdAt:Date.now()});
+  }
+  // Auto-save store contact
+  if((f.custType==="store"||f.custType==="both")&&f.storeName){
+    const exists=S.contacts.find(c=>c.type==="store"&&c.storeName===f.storeName);
+    const data={type:"store",storeName:f.storeName,storeContact:f.storeContact||"",storeAddress:f.storeAddress||"",storeGstin:f.storeGstin||"",updatedAt:Date.now()};
+    if(exists) await db.collection("contacts").doc(exists._id).update(data);
+    else await db.collection("contacts").add({...data,createdAt:Date.now()});
+  }
+}
+
+function fillDoctor(c){
+  S.form.doctorName=c.doctorName||"";
+  S.form.clinicName=c.clinicName||"";
+  S.form.phone=c.phone||"";
+  S.form.email=c.email||"";
+  S.form.address=c.address||"";
+  S.form.area=c.area||"";
+  S.form.city=c.city||"";
+  S.form.pincode=c.pincode||"";
+  S.showDocDrop=false;
+  render();
+}
+
+function fillStore(c){
+  S.form.storeName=c.storeName||"";
+  S.form.storeContact=c.storeContact||"";
+  S.form.storeAddress=c.storeAddress||"";
+  S.form.storeGstin=c.storeGstin||"";
+  S.showStoreDrop=false;
+  render();
+}
+
+function searchDoc(val){
+  S.form.doctorName=val;
+  if(val.length>=1){
+    S.docSuggest=S.contacts.filter(c=>c.type==="doctor"&&(c.doctorName||"").toLowerCase().includes(val.toLowerCase())).slice(0,6);
+    S.showDocDrop=S.docSuggest.length>0;
+  } else {S.showDocDrop=false;S.docSuggest=[];}
+  render();
+}
+
+function searchStore(val){
+  S.form.storeName=val;
+  if(val.length>=1){
+    S.storeSuggest=S.contacts.filter(c=>c.type==="store"&&(c.storeName||"").toLowerCase().includes(val.toLowerCase())).slice(0,6);
+    S.showStoreDrop=S.storeSuggest.length>0;
+  } else {S.showStoreDrop=false;S.storeSuggest=[];}
+  render();
+}
+
+async function delContact(id){
+  if(!confirm("Delete this contact?"))return;
+  try{await db.collection("contacts").doc(id).delete();toast("🗑️ Contact deleted");}
+  catch(e){toast("❌ "+e.message,"#ef4444");}
+}
 
 // ===== BOOT =====
 async function boot(){
@@ -683,12 +1102,67 @@ async function boot(){
       render();
     },err=>document.getElementById("ld-msg").textContent="Error: "+err.message);
     db.collection("catalog").onSnapshot(snap=>{S.catalog=snap.docs.map(d=>({...d.data(),_id:d.id}));render();});
+    db.collection("contacts").onSnapshot(snap=>{S.contacts=snap.docs.map(d=>({...d.data(),_id:d.id}));render();});
   }catch(e){
     document.getElementById("ld-msg").textContent="Failed: "+e.message;
     document.getElementById("ld").innerHTML+=`<button onclick="location.reload()" style="margin-top:20px;background:#fff;color:#0d1b4b;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:800;cursor:pointer">🔄 Retry</button>`;
   }
 }
-boot();
+// boot() is called by auth.onAuthStateChanged
 </script>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="auth-wrap" id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img id="auth-logo-img" src="" alt="Adhari" style="height:64px;filter:drop-shadow(0 4px 8px rgba(13,27,75,0.2))"/>
+    </div>
+    <div class="auth-title">Adhari Pharmaceuticals</div>
+    <div class="auth-sub">Sign in to access your orders dashboard</div>
+
+    <div class="auth-err" id="auth-err"></div>
+
+    <!-- Google Sign In -->
+    <button class="google-btn" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-divider">or sign in with email</div>
+
+    <!-- Email/Password -->
+    <div style="margin-bottom:12px">
+      <label class="lbl">Email</label>
+      <input class="inp" type="email" id="login-email" placeholder="adharipharmaceuticals@gmail.com" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()"/>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="lbl">Password</label>
+      <div style="position:relative">
+        <input class="inp" type="password" id="login-pass" placeholder="Enter your password" style="padding-right:44px" onkeydown="if(event.key==='Enter')signInEmail()"/>
+        <button onclick="togglePwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px" id="pwd-eye">👁️</button>
+      </div>
+    </div>
+    <button onclick="signInEmail()" style="width:100%;padding:13px;background:linear-gradient(90deg,#0d1b4b,#1a3a8f);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px">🔐 Sign In</button>
+
+    <div class="auth-forget">Forgot password? <span onclick="showForgot()">Reset via email</span></div>
+
+    <div class="auth-info">🔒 Access restricted to authorized admin only.<br/>Contact Adhari admin if you need access.</div>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:18px;padding:28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <h3 style="color:#0d1b4b;margin-bottom:6px;font-size:17px">🔑 Reset Password</h3>
+    <p style="color:#888;font-size:13px;margin-bottom:16px">Enter your email and we'll send a reset link.</p>
+    <input class="inp" type="email" id="forgot-email" placeholder="your@email.com" style="margin-bottom:12px"/>
+    <div id="forgot-msg" style="font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="sendReset()" style="flex:1;background:#0d1b4b;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:800;cursor:pointer">Send Reset Link</button>
+      <button onclick="document.getElementById('forgot-modal').style.display='none'" style="padding:11px 16px;background:transparent;color:#888;border:1.5px solid #ddd;border-radius:10px;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
