@@ -446,8 +446,10 @@ function render(){
 
     const dis=!((ct==="doctor"&&f.doctorName&&f.phone)||(ct==="store"&&f.storeName)||(ct==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
 
-    const docDrop=`<div class="drop" id="doc-drop" style="display:${s.showDocDrop&&s.docSuggest.length>0?'block':'none'}">${s.docSuggest.map((c,i)=>`<div class="drop-item" onclick='fillDoctor(${JSON.stringify(c)})'><div style="font-weight:800;color:#0d1b4b;font-size:13px">👨‍⚕️ Dr. ${c.doctorName}</div><div style="font-size:11px;color:#888">${c.clinicName?c.clinicName+" · ":""}${c.phone||""}${c.city?" · "+c.city:""}</div></div>`).join("")}</div>`:"";
-    const storeDrop=`<div class="drop" id="store-drop" style="display:${s.showStoreDrop&&s.storeSuggest.length>0?'block':'none'};border-color:#86efac">${s.storeSuggest.map(c=>`<div class="drop-item" onclick='fillStore(${JSON.stringify(c)})'><div style="font-weight:800;color:#166534;font-size:13px">🏪 ${c.storeName}</div><div style="font-size:11px;color:#888">${c.storeContact||""}${c.storeGstin?" · GSTIN: "+c.storeGstin:""}</div></div>`).join("")}</div>`;
+    const docVis=s.showDocDrop&&s.docSuggest.length>0?"block":"none";
+    const docDrop=`<div class="drop" id="doc-drop" style="display:${docVis}">${s.docSuggest.map((ct2)=>`<div class="drop-item" onclick="fillDoctor(${JSON.stringify(ct2).replace(/"/g,'&quot;')})"><div style="font-weight:800;color:#0d1b4b;font-size:13px">Dr. ${ct2.doctorName}</div><div style="font-size:11px;color:#888">${ct2.clinicName?ct2.clinicName+" · ":""}${ct2.phone||""}${ct2.city?" · "+ct2.city:""}</div></div>`).join("")}</div>`;
+    const storeVis=s.showStoreDrop&&s.storeSuggest.length>0?"block":"none";
+    const storeDrop=`<div class="drop" id="store-drop" style="display:${storeVis};border-color:#86efac">${s.storeSuggest.map((ct2)=>`<div class="drop-item" onclick="fillStore(${JSON.stringify(ct2).replace(/"/g,'&quot;')})"><div style="font-weight:800;color:#166534;font-size:13px">${ct2.storeName}</div><div style="font-size:11px;color:#888">${ct2.storeContact||""}${ct2.storeGstin?" · GSTIN: "+ct2.storeGstin:""}</div></div>`).join("")}</div>`;
 
     const docSec=(ct==="doctor"||ct==="both")?`<div class="sec"><div class="stl">👨‍⚕️ Doctor Info</div>
       <div class="g2">
