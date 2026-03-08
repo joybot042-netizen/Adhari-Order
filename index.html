@@ -657,12 +657,13 @@ function render(){
       <td style="padding:7px 6px"><input class="bi" value="${p.bonus||""}" placeholder="1+1" onchange="up('${p.name}','bonus',this.value)"/></td>
       <td style="padding:7px 6px"><button onclick="rpo('${p.name}')" style="background:#fce4ec;color:#c62828;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px">✕</button></td>
     </tr>`).join("");
-    const dis=!((f.custType==="doctor"&&f.doctorName&&f.phone)||(f.custType==="store"&&f.storeName)||(f.custType==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
+    const ct=f.custType||"doctor";
+    const dis=!((ct==="doctor"&&f.doctorName&&f.phone)||(ct==="store"&&f.storeName)||(ct==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
 
     // Customer type sections
     // docDrop handled by updateDocDrop() — no re-render needed
 
-    const doctorSection = (f.custType==="doctor"||f.custType==="both") ? `
+    const doctorSection = (ct==="doctor"||ct==="both") ? `
       <div class="sec"><div class="stl">👨‍⚕️ Doctor Info</div>
         <div class="g2">
           <div style="position:relative">
@@ -683,7 +684,7 @@ function render(){
 
     // storeDrop handled by updateStoreDrop() — no re-render needed
 
-    const storeSection = (f.custType==="store"||f.custType==="both") ? `
+    const storeSection = (ct==="store"||ct==="both") ? `
       <div class="sec3"><div class="stl">🏪 Medical Store Info</div>
         <div class="g2">
           <div style="position:relative">
@@ -700,15 +701,15 @@ function render(){
     html=`<div class="box">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;border-bottom:2px solid #eff6ff;padding-bottom:14px">
         <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:22px">📝</div>
-        <div><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">${s.editId?"Edit Order":"New Sales Order"}</h2><div style="color:#888;font-size:13px">Select customer type then fill details</div></div>
+        <div><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">${s.editId?"✏️ Edit Order":"New Sales Order"}</h2><div style="color:#888;font-size:13px">Select customer type then fill details</div></div>
       </div>
 
       <div style="margin-bottom:16px">
         <label class="lbl" style="margin-bottom:8px">📋 Order For</label>
         <div class="type-toggle">
-          <button class="type-btn ${f.custType==="doctor"?"on":"off"}" onclick="sf('custType','doctor');render()">👨‍⚕️ Doctor</button>
-          <button class="type-btn ${f.custType==="store"?"on":"off"}" onclick="sf('custType','store');render()">🏪 Medical Store</button>
-          <button class="type-btn ${f.custType==="both"?"on":"off"}" onclick="sf('custType','both');render()">👨‍⚕️ + 🏪 Both</button>
+          <button class="type-btn ${ct==="doctor"?"on":"off"}" onclick="sf('custType','doctor');render()">👨‍⚕️ Doctor</button>
+          <button class="type-btn ${ct==="store"?"on":"off"}" onclick="sf('custType','store');render()">🏪 Medical Store</button>
+          <button class="type-btn ${ct==="both"?"on":"off"}" onclick="sf('custType','both');render()">👨‍⚕️ + 🏪 Both</button>
         </div>
       </div>
 
@@ -1001,7 +1002,22 @@ function tp(name){const p=S.catalog.find(x=>x.name===name);if(!p)return;const i=
 function rpo(name){S.form.products=S.form.products.filter(p=>p.name!==name);render();}
 function up(name,field,val){const p=S.form.products.find(x=>x.name===name);if(p){p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;}}
 function vd(id){S.detail=S.orders.find(o=>o._id===id)||null;S.view="detail";render();}
-function se(id){const o=S.orders.find(x=>x._id===id);if(!o)return;S.form={...o,products:o.products.map(p=>({...p}))};S.editId=o._id;S.view="form";render();}
+function se(id){
+  const o=S.orders.find(x=>x._id===id);
+  if(!o)return;
+  // Merge with bf() defaults so old orders missing new fields still work
+  S.form={
+    ...bf(),
+    ...o,
+    custType:o.custType||"doctor",
+    products:o.products.map(p=>({gst:12,...p}))
+  };
+  S.editId=o._id;
+  S.view="form";
+  S.showDocDrop=false;
+  S.showStoreDrop=false;
+  render();
+}
 
 async function so(){
   const f=S.form;
@@ -1030,14 +1046,14 @@ function pi(){if(S.invOrd)pp(iHTML(S.invOrd,S.invNo,S.invDate,S.gstType));}
 // ===== CONTACT HELPERS =====
 async function saveContactFromOrder(f){
   // Auto-save doctor contact
-  if((f.custType==="doctor"||f.custType==="both")&&f.doctorName&&f.phone){
+  if((ct==="doctor"||ct==="both")&&f.doctorName&&f.phone){
     const exists=S.contacts.find(c=>c.type==="doctor"&&c.phone===f.phone);
     const data={type:"doctor",doctorName:f.doctorName,clinicName:f.clinicName||"",phone:f.phone,email:f.email||"",address:f.address||"",area:f.area||"",city:f.city||"",pincode:f.pincode||"",updatedAt:Date.now()};
     if(exists) await db.collection("contacts").doc(exists._id).update(data);
     else await db.collection("contacts").add({...data,createdAt:Date.now()});
   }
   // Auto-save store contact
-  if((f.custType==="store"||f.custType==="both")&&f.storeName){
+  if((ct==="store"||ct==="both")&&f.storeName){
     const exists=S.contacts.find(c=>c.type==="store"&&c.storeName===f.storeName);
     const data={type:"store",storeName:f.storeName,storeContact:f.storeContact||"",storeAddress:f.storeAddress||"",storeGstin:f.storeGstin||"",updatedAt:Date.now()};
     if(exists) await db.collection("contacts").doc(exists._id).update(data);
