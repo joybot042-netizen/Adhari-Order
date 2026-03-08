@@ -853,7 +853,7 @@ function showLoadErr(msg){
   const det=document.getElementById("ld-detail");
   if(det){
     if(msg.includes("permission")||msg.includes("Permission")||msg.includes("PERMISSION")){
-      det.textContent="Fix: Go to Firebase Console → Firestore → Rules → set allow read, write: if true → Publish";
+      det.textContent="Fix: You are not logged in as admin, or Firestore Rules are blocking access. Sign out and sign back in.";
     } else if(msg.includes("timed out")){
       det.textContent="Check your internet connection and make sure popups are allowed.";
     }
