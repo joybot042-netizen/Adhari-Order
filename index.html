@@ -421,7 +421,7 @@ function render(){
         </div>
       </div>`).join("");
     html=`<div style="display:flex;gap:10px;margin-bottom:14px;align-items:center">
-      <input class="inp" style="flex:1" placeholder="🔍 Search doctor, store, phone, city..." value="${s.search}" oninput="set({search:this.value})"/>
+      <input class="inp" style="flex:1" placeholder="🔍 Search doctor, store, phone, city..." value="${s.search}" oninput="updateSearch(this.value)"/>
       <div style="background:#1a3a8f;color:#fff;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;white-space:nowrap">${filtO.length}</div>
     </div>${cards}`;
   }
@@ -445,8 +445,8 @@ function render(){
 
     const dis=!((ct==="doctor"&&f.doctorName&&f.phone)||(ct==="store"&&f.storeName)||(ct==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
 
-    const docDrop=s.showDocDrop&&s.docSuggest.length>0?`<div class="drop">${s.docSuggest.map((c,i)=>`<div class="drop-item" onclick='fillDoctor(${JSON.stringify(c)})'><div style="font-weight:800;color:#0d1b4b;font-size:13px">👨‍⚕️ Dr. ${c.doctorName}</div><div style="font-size:11px;color:#888">${c.clinicName?c.clinicName+" · ":""}${c.phone||""}${c.city?" · "+c.city:""}</div></div>`).join("")}</div>`:"";
-    const storeDrop=s.showStoreDrop&&s.storeSuggest.length>0?`<div class="drop" style="border-color:#86efac">${s.storeSuggest.map(c=>`<div class="drop-item" onclick='fillStore(${JSON.stringify(c)})'><div style="font-weight:800;color:#166534;font-size:13px">🏪 ${c.storeName}</div><div style="font-size:11px;color:#888">${c.storeContact||""}${c.storeGstin?" · GSTIN: "+c.storeGstin:""}</div></div>`).join("")}</div>`:"";
+    const docDrop=`<div class="drop" id="doc-drop" style="display:${s.showDocDrop&&s.docSuggest.length>0?'block':'none'}">${s.docSuggest.map((c,i)=>`<div class="drop-item" onclick='fillDoctor(${JSON.stringify(c)})'><div style="font-weight:800;color:#0d1b4b;font-size:13px">👨‍⚕️ Dr. ${c.doctorName}</div><div style="font-size:11px;color:#888">${c.clinicName?c.clinicName+" · ":""}${c.phone||""}${c.city?" · "+c.city:""}</div></div>`).join("")}</div>`:"";
+    const storeDrop=`<div class="drop" id="store-drop" style="display:${s.showStoreDrop&&s.storeSuggest.length>0?'block':'none'};border-color:#86efac">${s.storeSuggest.map(c=>`<div class="drop-item" onclick='fillStore(${JSON.stringify(c)})'><div style="font-weight:800;color:#166534;font-size:13px">🏪 ${c.storeName}</div><div style="font-size:11px;color:#888">${c.storeContact||""}${c.storeGstin?" · GSTIN: "+c.storeGstin:""}</div></div>`).join("")}</div>`;
 
     const docSec=(ct==="doctor"||ct==="both")?`<div class="sec"><div class="stl">👨‍⚕️ Doctor Info</div>
       <div class="g2">
@@ -492,7 +492,7 @@ function render(){
           <div class="stl" style="margin-bottom:0">💊 Products (${f.products.length})</div>
           <button onclick="sv('catalog')" style="font-size:11px;color:#1e40af;background:none;border:none;cursor:pointer;text-decoration:underline;font-weight:700">⚙️ Manage Catalog</button>
         </div>
-        <input class="inp" style="margin-bottom:8px" placeholder="🔍 Search medicines..." value="${s.pSearch}" oninput="set({pSearch:this.value})"/>
+        <input class="inp" style="margin-bottom:8px" placeholder="🔍 Search medicines..." value="${s.pSearch}" oninput="updatePSearch(this.value)"/>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${cBtns}</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto;padding:2px">${pBtns}</div>
       </div>
@@ -531,7 +531,7 @@ function render(){
       <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#92400e">
         <b>📋 GST Rates:</b> 0% — Ayurvedic/Exempt &nbsp;|&nbsp; 5% — Essential (Paracetamol, Insulin) &nbsp;|&nbsp; 12% — Most pharma &nbsp;|&nbsp; 18% — Supplements &nbsp;|&nbsp; 28% — Luxury
       </div>
-      <input class="inp" style="margin-bottom:10px" placeholder="🔍 Search medicines..." value="${s.catSearch}" oninput="set({catSearch:this.value})"/>
+      <input class="inp" style="margin-bottom:10px" placeholder="🔍 Search medicines..." value="${s.catSearch}" oninput="updateCatSearch(this.value)"/>
       <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">${catFilterBtns}</div>
       <div style="max-height:400px;overflow-y:auto">${rows||`<div class="empty">No medicines found</div>`}</div>
       <div style="margin-top:16px;display:flex;gap:10px">
@@ -577,7 +577,7 @@ function render(){
           <div style="background:#eff6ff;border-radius:10px;padding:10px 14px;font-size:22px">👥</div>
           <div><h2 style="margin:0;color:#0d1b4b;font-size:19px;font-weight:800">Contacts</h2><div style="color:#888;font-size:13px">${fdocs.length} doctors · ${fstores.length} stores</div></div>
         </div>
-        <input class="inp" style="width:200px" placeholder="🔍 Search..." value="${s.search}" oninput="set({search:this.value})"/>
+        <input class="inp" style="width:200px" placeholder="🔍 Search..." value="${s.search}" oninput="updateSearch(this.value)"/>
       </div>
       <div style="background:#dbeafe;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#1e40af">💡 Contacts auto-save each time you create or update an order. Tap <b>➕ Order</b> to start a new order with details pre-filled.</div>
       <div style="font-weight:800;color:#0d1b4b;font-size:12px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">👨‍⚕️ Doctors (${fdocs.length})</div>
@@ -645,8 +645,8 @@ function render(){
       <div class="mhd"><div><div style="color:#fff;font-weight:800;font-size:17px">🧾 Tax Invoice</div><div style="color:#93c5fd;font-size:12px;margin-top:2px">${o.orderNo} — ${billName(o)}</div></div><button onclick="set({inv:false})" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:16px;font-weight:800">✕</button></div>
       <div class="mbd">
         <div class="g2" style="margin-bottom:14px">
-          <div><label class="lbl">Invoice No</label><input class="inp" style="font-weight:700" value="${s.invNo}" oninput="set({invNo:this.value})"/></div>
-          <div><label class="lbl">Invoice Date</label><input class="inp" type="date" value="${s.invDate}" oninput="set({invDate:this.value})"/></div>
+          <div><label class="lbl">Invoice No</label><input class="inp" style="font-weight:700" value="${s.invNo}" oninput="S.invNo=this.value"/></div>
+          <div><label class="lbl">Invoice Date</label><input class="inp" type="date" value="${s.invDate}" oninput="S.invDate=this.value"/></div>
         </div>
         <div style="margin-bottom:14px"><label class="lbl" style="margin-bottom:8px">GST Type</label>
           <div style="display:flex;gap:8px">
@@ -697,6 +697,62 @@ function render(){
     <div class="tgl">✦ ${CO.tg} ✦ <span style="font-size:10px;font-weight:700;color:${liveClr};margin-left:8px">${s.live?"● Live":"● Connecting..."}</span></div>
     <div class="main">${html}</div>${mod}`;
 }
+
+// ===== INPUT HELPERS (no full re-render) =====
+// For plain text fields: just update state, browser keeps cursor
+// sf() already does this correctly
+
+// For search/filter: debounce to avoid re-render on every keystroke
+let _searchTimer=null;
+function debouncedSet(p,delay){
+  Object.assign(S,p);
+  clearTimeout(_searchTimer);
+  _searchTimer=setTimeout(()=>render(),delay||300);
+}
+
+// Doctor name autocomplete — only re-render the dropdown, not the whole form
+function searchDoc(val){
+  S.form.doctorName=val;
+  const matches=val.length>=1?S.contacts.filter(c=>c.type==="doctor"&&(c.doctorName||"").toLowerCase().includes(val.toLowerCase())).slice(0,5):[];
+  S.docSuggest=matches;
+  S.showDocDrop=matches.length>0;
+  // Only update the dropdown div, not the whole page
+  const dd=document.getElementById("doc-drop");
+  if(dd){
+    if(S.showDocDrop){
+      dd.innerHTML=matches.map(ct=>`<div class="drop-item" onclick='fillDoctor(${JSON.stringify(ct).replace(/'/g,"\'")})'><div style="font-weight:800;color:#0d1b4b;font-size:13px">👨‍⚕️ Dr. ${ct.doctorName}</div><div style="font-size:11px;color:#888">${ct.clinicName?ct.clinicName+" · ":""}${ct.phone||""}${ct.city?" · "+ct.city:""}</div></div>`).join("");
+      dd.style.display="block";
+    } else {
+      dd.style.display="none";
+    }
+  }
+}
+
+// Store name autocomplete — same approach
+function searchStore(val){
+  S.form.storeName=val;
+  const matches=val.length>=1?S.contacts.filter(c=>c.type==="store"&&(c.storeName||"").toLowerCase().includes(val.toLowerCase())).slice(0,5):[];
+  S.storeSuggest=matches;
+  S.showStoreDrop=matches.length>0;
+  const dd=document.getElementById("store-drop");
+  if(dd){
+    if(S.showStoreDrop){
+      dd.innerHTML=matches.map(ct=>`<div class="drop-item" onclick='fillStore(${JSON.stringify(ct).replace(/'/g,"\'")})'><div style="font-weight:800;color:#166534;font-size:13px">🏪 ${ct.storeName}</div><div style="font-size:11px;color:#888">${ct.storeContact||""}${ct.storeGstin?" · GSTIN: "+ct.storeGstin:""}</div></div>`).join("");
+      dd.style.display="block";
+    } else {
+      dd.style.display="none";
+    }
+  }
+}
+
+// List search — debounced
+function updateSearch(val){S.search=val;clearTimeout(_searchTimer);_searchTimer=setTimeout(()=>render(),250);}
+
+// Product search in form — debounced  
+function updatePSearch(val){S.pSearch=val;clearTimeout(_searchTimer);_searchTimer=setTimeout(()=>render(),250);}
+
+// Catalog search — debounced
+function updateCatSearch(val){S.catSearch=val;clearTimeout(_searchTimer);_searchTimer=setTimeout(()=>render(),250);}
 
 // ===== ACTIONS =====
 function sv(v){
