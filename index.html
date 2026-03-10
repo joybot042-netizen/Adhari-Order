@@ -601,20 +601,21 @@ function render(){
     const ct=f.custType||"doctor";
     const sel=f.products.map(p=>p.name);
     const cBtns=uCats.map(c=>`<button style="padding:3px 11px;border-radius:20px;font-size:11px;cursor:pointer;font-weight:700;border:1.5px solid;background:${s.pCat===c?"#0d1b4b":c==="Antiviral"?"#fef3c7":c==="Ayurvedic"?"#f0fdf4":"#fff"};color:${s.pCat===c?"#fff":c==="Antiviral"?"#92400e":c==="Ayurvedic"?"#166534":"#1e40af"};border-color:${s.pCat===c?"#0d1b4b":c==="Antiviral"?"#fcd34d":c==="Ayurvedic"?"#86efac":"#bfdbfe"}" onclick="set({pCat:'${c}'})">${c==="Antiviral"?"🦠 ":c==="Ayurvedic"?"🌿 ":""}${c}</button>`).join("");
-    const pBtns=forOrd.map(p=>{const on=sel.includes(p.name),av=p.cat==="Antiviral",ay=p.cat==="Ayurvedic";const bg=on?"#0d1b4b":av?"#fef3c7":ay?"#f0fdf4":"#fff",cl=on?"#fff":av?"#92400e":ay?"#166534":"#1e40af",bd=on?"#0d1b4b":av?"#fcd34d":ay?"#86efac":"#bfdbfe";return`<button style="padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:700;border:1.5px solid;background:${bg};color:${cl};border-color:${bd}" onclick="tp('${p.name.replace(/'/g,"\\'")}'">${on?"✓ ":""}${p.name}</button>`;}).join("");
+    const pBtns=forOrd.map(p=>{const on=sel.includes(p.name),av=p.cat==="Antiviral",ay=p.cat==="Ayurvedic";const bg=on?"#0d1b4b":av?"#fef3c7":ay?"#f0fdf4":"#fff",cl=on?"#fff":av?"#92400e":ay?"#166534":"#1e40af",bd=on?"#0d1b4b":av?"#fcd34d":ay?"#86efac":"#bfdbfe";return`<button data-pname="${p.name.replace(/"/g,'&quot;')}" style="padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:700;border:1.5px solid;background:${bg};color:${cl};border-color:${bd}">${on?"✓ ":""}${p.name}</button>`;}).join("");
     const qRows=f.products.map((p,i)=>{
-      const nm=p.name.replace(/'/g,"\'");
-      return `<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}">
-      <td style="padding:6px 8px;font-weight:700;color:#0d1b4b;font-size:12px">${p.name}<div style="font-size:10px;color:#888">${p.hsn?"HSN:"+p.hsn:""}</div></td>
-      <td style="padding:6px 4px"><input style="width:60px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" value="${p.batch||''}" placeholder="Batch" onchange="up('${nm}','batch',this.value)"/></td>
-      <td style="padding:6px 4px"><input style="width:90px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" type="month" value="${p.expiry||''}" onchange="up('${nm}','expiry',this.value)"/></td>
-      <td style="padding:6px 4px"><input style="width:58px;padding:3px 4px;border-radius:6px;border:1.5px solid #93c5fd;font-size:11px;outline:none;text-align:right" type="number" value="${p.mrp}" onchange="up('${nm}','mrp',this.value)"/></td>
-      <td style="padding:6px 4px"><input style="width:58px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:right" type="number" value="${p.rate||''}" placeholder="Rate" onchange="up('${nm}','rate',this.value)"/></td>
-      <td style="padding:6px 4px"><input style="width:40px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:center" type="number" min="0" max="100" value="${p.disc||0}" onchange="up('${nm}','disc',this.value)"/></td>
-      <td style="padding:6px 4px"><select style="padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" onchange="up('${nm}','gst',this.value)">${[0,5,12,18,28].map(r=>`<option value="${r}" ${parseFloat(p.gst||12)===r?"selected":""}>${r}%</option>`).join("")}</select></td>
-      <td style="padding:6px 4px"><input style="width:48px;padding:3px 4px;border-radius:6px;border:1.5px solid #93c5fd;font-size:13px;font-weight:700;text-align:center;outline:none;background:#eff6ff" type="number" min="1" value="${p.qty}" onchange="up('${nm}','qty',this.value)"/></td>
-      <td style="padding:6px 4px"><button onclick="rpo('${nm}')" style="background:#fce4ec;color:#c62828;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px">✕</button></td>
-    </tr>`;}).join("");
+      const esc=p.name.replace(/"/g,'&quot;');
+      return `<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?'#fff':'#f8faff'}">
+      <td style="padding:6px 8px;font-weight:700;color:#0d1b4b;font-size:12px">${p.name}<div style="font-size:10px;color:#888">${p.hsn?'HSN:'+p.hsn:''}</div></td>
+      <td style="padding:6px 4px"><input style="width:70px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" value="${p.batch||''}" placeholder="Batch" data-field="batch" data-name="${esc}" class="pf-inp" oninput="upF(this)"/></td>
+      <td style="padding:6px 4px"><input style="width:96px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" type="month" value="${p.expiry||''}" data-field="expiry" data-name="${esc}" class="pf-inp" onchange="upF(this)"/></td>
+      <td style="padding:6px 4px"><input style="width:60px;padding:3px 4px;border-radius:6px;border:1.5px solid #93c5fd;font-size:11px;outline:none;text-align:right" type="number" value="${p.mrp}" placeholder="MRP" data-field="mrp" data-name="${esc}" class="pf-inp" oninput="upF(this)"/></td>
+      <td style="padding:6px 4px"><input style="width:60px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:right" type="number" value="${p.rate||''}" placeholder="Rate" data-field="rate" data-name="${esc}" class="pf-inp" oninput="upF(this)"/></td>
+      <td style="padding:6px 4px"><input style="width:42px;padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:center" type="number" min="0" max="100" value="${p.disc||0}" data-field="disc" data-name="${esc}" class="pf-inp" oninput="upF(this)"/></td>
+      <td style="padding:6px 4px"><select style="padding:3px 4px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" data-field="gst" data-name="${esc}" class="pf-inp" onchange="upF(this)">${[0,5,12,18,28].map(r=>`<option value="${r}" ${parseFloat(p.gst||12)===r?'selected':''}>${r}%</option>`).join('')}</select></td>
+      <td style="padding:6px 4px"><input style="width:50px;padding:3px 4px;border-radius:6px;border:1.5px solid #93c5fd;font-size:13px;font-weight:700;text-align:center;outline:none;background:#eff6ff" type="number" min="1" value="${p.qty}" data-field="qty" data-name="${esc}" class="pf-inp" oninput="upF(this)"/></td>
+      <td style="padding:6px 4px"><button data-rpo="${esc}" style="background:#fce4ec;color:#c62828;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px">✕</button></td>
+    </tr>`;
+    }).join("");
 
     const dis=!((ct==="doctor"&&f.doctorName&&f.phone)||(ct==="store"&&f.storeName)||(ct==="both"&&f.doctorName&&f.storeName))||f.products.length===0;
 
@@ -817,17 +818,17 @@ function render(){
   if(s.inv&&s.invOrd){
     const o=s.invOrd,gstData=calcGST(o.products,s.gstType),totalAmt=subAmt(o.products);
     const iRows=o.products.map((p,i)=>{
-      const nm2=p.name.replace(/'/g,"\'");
+      const esc2=p.name.replace(/"/g,'&quot;');
       const irate=parseFloat(p.rate||p.mrp||0),iqty=parseInt(p.qty||1),idisc=parseFloat(p.disc||0);
       const iamt=(irate*iqty*(1-idisc/100)).toFixed(2);
-      return `<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?"#fff":"#f8faff"}">
+      return `<tr style="border-bottom:1px solid #dbeafe;background:${i%2===0?'#fff':'#f8faff'}">
         <td style="padding:6px 8px">${ctag(p.cat)}<div style="font-weight:700;color:#0d1b4b;font-size:12px">${p.name}</div></td>
-        <td style="padding:6px 4px"><input style="width:64px;padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" value="${p.batch||''}" placeholder="Batch" onchange="uip('${nm2}','batch',this.value)"/></td>
-        <td style="padding:6px 4px;text-align:right"><input style="width:58px;padding:3px;border-radius:6px;border:1.5px solid #93c5fd;font-size:11px;outline:none;text-align:right" type="number" value="${p.mrp}" onchange="uip('${nm2}','mrp',this.value)"/></td>
-        <td style="padding:6px 4px;text-align:right"><input style="width:58px;padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:right" type="number" value="${p.rate||''}" placeholder="Rate" onchange="uip('${nm2}','rate',this.value)"/></td>
-        <td style="padding:6px 4px;text-align:center"><input style="width:40px;padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:center" type="number" min="0" max="100" value="${idisc}" onchange="uip('${nm2}','disc',this.value)"/></td>
-        <td style="padding:6px 4px"><select style="padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" onchange="uip('${nm2}','gst',this.value)">${[0,5,12,18,28].map(r=>`<option value="${r}" ${parseFloat(p.gst||12)===r?"selected":""}>${r}%</option>`).join("")}</select></td>
-        <td style="padding:6px 4px"><input style="width:48px;padding:3px;border-radius:6px;border:1.5px solid #93c5fd;font-size:12px;font-weight:700;text-align:center;outline:none;background:#eff6ff" type="number" min="1" value="${iqty}" onchange="uip('${nm2}','qty',this.value)"/></td>
+        <td style="padding:6px 4px"><input style="width:70px;padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" value="${p.batch||''}" placeholder="Batch" data-field="batch" data-iname="${esc2}" class="if-inp" oninput="uipF(this)"/></td>
+        <td style="padding:6px 4px"><input style="width:60px;padding:3px;border-radius:6px;border:1.5px solid #93c5fd;font-size:11px;outline:none;text-align:right" type="number" value="${p.mrp}" data-field="mrp" data-iname="${esc2}" class="if-inp" oninput="uipF(this)"/></td>
+        <td style="padding:6px 4px"><input style="width:60px;padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:right" type="number" value="${p.rate||''}" placeholder="Rate" data-field="rate" data-iname="${esc2}" class="if-inp" oninput="uipF(this)"/></td>
+        <td style="padding:6px 4px"><input style="width:40px;padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none;text-align:center" type="number" min="0" max="100" value="${idisc}" data-field="disc" data-iname="${esc2}" class="if-inp" oninput="uipF(this)"/></td>
+        <td style="padding:6px 4px"><select style="padding:3px;border-radius:6px;border:1.5px solid #bfdbfe;font-size:11px;outline:none" data-field="gst" data-iname="${esc2}" class="if-inp" onchange="uipF(this)">${[0,5,12,18,28].map(r=>`<option value="${r}" ${parseFloat(p.gst||12)===r?'selected':''}>${r}%</option>`).join('')}</select></td>
+        <td style="padding:6px 4px"><input style="width:50px;padding:3px;border-radius:6px;border:1.5px solid #93c5fd;font-size:12px;font-weight:700;text-align:center;outline:none;background:#eff6ff" type="number" min="1" value="${iqty}" data-field="qty" data-iname="${esc2}" class="if-inp" oninput="uipF(this)"/></td>
         <td style="padding:6px 8px;text-align:right;font-weight:700;color:#0d1b4b">₹${iamt}</td>
       </tr>`;
     }).join("");
@@ -974,7 +975,21 @@ function tp(name){
   render();
 }
 function rpo(name){S.form.products=S.form.products.filter(p=>p.name!==name);render();}
-function up(name,field,val){const p=S.form.products.find(x=>x.name===name);if(p)p[field]=field==="qty"?(parseInt(val)||1):parseFloat(val)||val;render();}
+function up(name,field,val){
+  const p=S.form.products.find(x=>x.name===name);
+  if(p){if(field==="qty")p[field]=parseInt(val)||1;else if(field==="batch"||field==="expiry")p[field]=val;else p[field]=parseFloat(val)||val;}
+}
+function upF(el){
+  const name=el.getAttribute('data-name');
+  const field=el.getAttribute('data-field');
+  const val=el.value;
+  const p=S.form.products.find(x=>x.name===name);
+  if(p){
+    if(field==="qty")p.qty=parseInt(val)||1;
+    else if(field==="batch"||field==="expiry")p[field]=val;
+    else p[field]=parseFloat(val)||val;
+  }
+}
 function vd(id){S.detail=S.orders.find(o=>o._id===id)||null;if(S.detail)S.view="detail";render();}
 
 async function so(){
@@ -1026,9 +1041,39 @@ function oi(id){
   S.invNo="INV-"+String(Date.now()).slice(-6);
   S.invDate=td();S.inv=true;render();
 }
-function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){if(field==="qty")p[field]=parseInt(val)||1;else if(field==="batch"||field==="expiry")p[field]=val;else p[field]=parseFloat(val)||0;}render();}
+function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){if(field==="qty")p[field]=parseInt(val)||1;else if(field==="batch"||field==="expiry")p[field]=val;else p[field]=parseFloat(val)||0;}}
+function uipF(el){
+  if(!S.invOrd)return;
+  const name=el.getAttribute('data-iname');
+  const field=el.getAttribute('data-field');
+  const val=el.value;
+  const p=S.invOrd.products.find(x=>x.name===name);
+  if(p){
+    if(field==="qty")p[field]=parseInt(val)||1;
+    else if(field==="batch"||field==="expiry")p[field]=val;
+    else p[field]=parseFloat(val)||0;
+    // Update amount cell in same row
+    const row=el.closest('tr');
+    if(row){
+      const irate=parseFloat(p.rate||p.mrp||0),iqty=parseInt(p.qty||1),idisc=parseFloat(p.disc||0);
+      const cells=row.querySelectorAll('td');
+      if(cells[7])cells[7].textContent='₹'+(irate*iqty*(1-idisc/100)).toFixed(2);
+    }
+    // Update totals
+    render();
+  }
+}
 function po(id){const o=S.orders.find(x=>x._id===id);if(o)pp(oHTML(o));}
 function pi(){if(S.invOrd)pp(iHTML(S.invOrd,S.invNo,S.invDate,S.gstType));}
+
+// ===== EVENT DELEGATION for product buttons =====
+// Using data-pname avoids all quote escaping issues with product names
+document.addEventListener('click', function(e){
+  const pBtn = e.target.closest('[data-pname]');
+  if(pBtn){ tp(pBtn.getAttribute('data-pname')); return; }
+  const rBtn = e.target.closest('[data-rpo]');
+  if(rBtn){ rpo(rBtn.getAttribute('data-rpo')); return; }
+});
 
 // ===== BOOT =====
 let _booted=false;
