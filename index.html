@@ -255,7 +255,7 @@ let S={
   view:"list",orders:[],catalog:[],contacts:[],
   search:"",editId:null,detail:null,
   form:bf(),pSearch:"",pCat:"All",
-  newP:{name:"",pack:"",mrp:"",cat:"General",gst:12},
+  newP:{name:"",pack:"",mrp:"",cat:"General",gst:12,hsn:"30049011",batch:"",expiry:"",rate:"",disc:0},
   catSearch:"",catErr:"",
   inv:false,invOrd:null,invNo:"",invDate:td(),gstType:"cgst",
   live:false,
@@ -318,7 +318,7 @@ function pp(html){
 function oHTML(o){
   const rows=o.products.map((p,i)=>`<tr><td>${i+1}</td><td><b>${p.name}</b></td><td>${p.cat||"—"}</td><td>${p.pack||"—"}</td><td>${p.mrp?"₹"+p.mrp:"—"}</td><td><b>${p.qty}</b></td><td>${p.bonus||"—"}</td></tr>`).join("");
   const bt=o.custType==="store"?`${o.storeName||""} | 📞 ${o.storeContact||""}`:o.custType==="both"?`Dr. ${o.doctorName} / ${o.storeName||""} | 📞 ${o.phone||""}`:`Dr. ${o.doctorName}${o.clinicName?" | "+o.clinicName:""}${o.phone?" | 📞 "+o.phone:""}`;
-  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:#0d1b4b;color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>${bt}</b></p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:#0d1b4b;color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}" style="height:80px;width:auto"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>${bt}</b></p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
 }
 
 
@@ -396,7 +396,7 @@ function iHTML(o,iNo,iDt,gstType){
 body{font-family:Arial,sans-serif;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .pg{width:210mm;margin:0 auto;padding:8mm 10mm}
 .hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.logo{height:55px}
+.logo{height:80px;width:auto}
 .co-info{text-align:right;font-size:11px;color:#333;line-height:1.6}
 .co-name{font-size:14px;font-weight:900;color:#0d1b4b}
 .gst-bar{background:#e8f0fe;border:1px solid #bfdbfe;border-radius:4px;padding:4px 10px;font-size:10px;color:#1e40af;margin-bottom:8px;text-align:center}
@@ -430,7 +430,7 @@ tbody tr:nth-child(even){background:#f8faff}
 </style></head><body><div class="pg">
 
 <div class="hdr">
-  <img class="logo" src="data:image/png;base64,${LOGO}"/>
+  <img class="logo" src="data:image/png;base64,${LOGO}" style="height:80px;width:auto"/>
   <div class="co-info">
     <div class="co-name">${CO.name}</div>
     <div>${CO.a1}</div>
@@ -699,8 +699,14 @@ function render(){
           <div style="grid-column:span 2"><label class="lbl">Medicine Name *</label><input class="inp" value="${s.newP.name}" oninput="snp('name',this.value)" placeholder="e.g. Ashwagandha 500mg Cap" onkeydown="if(event.key==='Enter')ap()"/></div>
           <div><label class="lbl">Pack Size</label><input class="inp" value="${s.newP.pack}" oninput="snp('pack',this.value)" placeholder="10x10"/></div>
           <div><label class="lbl">MRP ₹</label><input class="inp" type="number" value="${s.newP.mrp}" oninput="snp('mrp',this.value)" placeholder="0.00"/></div>
+          <div><label class="lbl">Rate ₹ (Selling Price)</label><input class="inp" type="number" value="${s.newP.rate}" oninput="snp('rate',this.value)" placeholder="Same as MRP if blank"/></div>
+          <div><label class="lbl">HSN Code</label><input class="inp" value="${s.newP.hsn||'30049011'}" oninput="snp('hsn',this.value)" placeholder="30049011"/></div>
           <div><label class="lbl">Category</label><select class="inp" onchange="snp('cat',this.value)">${CATS.filter(c=>c!=="All").map(c=>`<option ${s.newP.cat===c?"selected":""}>${c}</option>`).join("")}</select></div>
-          <div><label class="lbl">GST Rate</label><select class="inp" onchange="snp('gst',this.value)">${[0,5,12,18,28].map(r=>`<option value="${r}" ${s.newP.gst==r?"selected":""}>${r}% ${r===0?"(Exempt)":r===5?"(Essential)":r===12?"(Standard)":r===18?"(Supplement)":"(Luxury)"}</option>`).join("")}</select></div>
+          <div><label class="lbl">GST Rate</label><select class="inp" onchange="snp('gst',this.value)">${[0,5,12,18,28].map(r=>`<option value="${r}" ${s.newP.gst==r?"selected":""}>${r}% ${r===0?"(Exempt/Ayurvedic)":r===5?"(Essential)":r===12?"(Standard)":r===18?"(Supplement)":"(Luxury)"}</option>`).join("")}</select></div>
+          <div><label class="lbl">Disc % (Default)</label><input class="inp" type="number" min="0" max="100" value="${s.newP.disc||0}" oninput="snp('disc',this.value)" placeholder="0"/></div>
+        </div>
+        <div style="background:#fff8e1;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;margin-top:10px;font-size:11px;color:#92400e">
+          💡 <b>Batch No. and Expiry Date</b> are added per order when creating invoices — they change with each batch.
         </div>
         <button onclick="ap()" style="margin-top:10px;background:#0d1b4b;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:800;cursor:pointer">➕ Add Medicine</button>
         ${s.catErr?`<span style="color:#c62828;font-size:12px;margin-left:10px">⚠️ ${s.catErr}</span>`:""}
@@ -953,7 +959,7 @@ function se(id){
   const o=S.orders.find(x=>x._id===id);
   if(!o)return;
   // Merge with defaults to handle old orders missing newer fields
-  S.form={...bf(),...o,custType:o.custType||"doctor",products:o.products.map(p=>({gst:12,...p}))};
+  S.form={...bf(),...o,custType:o.custType||"doctor",products:o.products.map(p=>({gst:12,disc:0,batch:'',expiry:'',hsn:'30049011',...p,rate:p.rate||p.mrp||''}))};
   S.editId=o._id;
   S.view="form";
   S.showDocDrop=false;S.showStoreDrop=false;
@@ -964,7 +970,7 @@ function tp(name){
   const p=S.catalog.find(x=>x.name===name);if(!p)return;
   const i=S.form.products.findIndex(x=>x.name===name);
   if(i>=0)S.form.products.splice(i,1);
-  else S.form.products.push({...p,qty:1,bonus:""});
+  else S.form.products.push({...p,qty:1,bonus:"",batch:"",expiry:"",rate:p.mrp||"",disc:0,hsn:p.hsn||"30049011"});
   render();
 }
 function rpo(name){S.form.products=S.form.products.filter(p=>p.name!==name);render();}
@@ -1003,8 +1009,8 @@ async function ap(){
   const n=S.newP.name.trim();if(!n)return;
   if(S.catalog.some(p=>p.name.toLowerCase()===n.toLowerCase())){S.catErr="Already exists!";render();return;}
   try{
-    await db.collection("catalog").add({...S.newP,name:n,gst:parseFloat(S.newP.gst||12)});
-    toast("💊 Added!");S.newP={name:"",pack:"",mrp:"",cat:"General",gst:12};S.catErr="";render();
+    await db.collection("catalog").add({...S.newP,name:n,gst:parseFloat(S.newP.gst||12),rate:S.newP.rate||S.newP.mrp||"0",hsn:S.newP.hsn||"30049011",disc:parseFloat(S.newP.disc||0)});
+    toast("💊 Added!");S.newP={name:"",pack:"",mrp:"",cat:"General",gst:12,hsn:"30049011",batch:"",expiry:"",rate:"",disc:0};S.catErr="";render();
   }catch(e){toast("❌ "+e.message,"#ef4444");}
 }
 
