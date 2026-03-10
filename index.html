@@ -257,7 +257,7 @@ let S={
   form:bf(),pSearch:"",pCat:"All",
   newP:{name:"",pack:"",mrp:"",cat:"General",gst:12,hsn:"30049011",batch:"",expiry:"",rate:"",disc:0},
   catSearch:"",catErr:"",
-  inv:false,invOrd:null,invNo:"",invDate:td(),gstType:"cgst",
+  inv:false,invOrd:null,invNo:"",invDate:td(),gstType:"cgst",invBillTo:"order",invShipTo:"order",
   live:false,
   docSuggest:[],storeSuggest:[],showDocDrop:false,showStoreDrop:false
 };
@@ -318,7 +318,7 @@ function pp(html){
 function oHTML(o){
   const rows=o.products.map((p,i)=>`<tr><td>${i+1}</td><td><b>${p.name}</b></td><td>${p.cat||"—"}</td><td>${p.pack||"—"}</td><td>${p.mrp?"₹"+p.mrp:"—"}</td><td><b>${p.qty}</b></td><td>${p.bonus||"—"}</td></tr>`).join("");
   const bt=o.custType==="store"?`${o.storeName||""} | 📞 ${o.storeContact||""}`:o.custType==="both"?`Dr. ${o.doctorName} / ${o.storeName||""} | 📞 ${o.phone||""}`:`Dr. ${o.doctorName}${o.clinicName?" | "+o.clinicName:""}${o.phone?" | 📞 "+o.phone:""}`;
-  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:#0d1b4b;color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}</style></head><body><div class="pg"><div class="hd"><img class="logo" src="data:image/png;base64,${LOGO}" style="height:80px;width:auto"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>${bt}</b></p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;font-size:13px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pg{width:210mm;padding:12mm 14mm;margin:0 auto}.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a3a8f;padding-bottom:12px;margin-bottom:10px}.logo{height:50px}.cn{font-size:13px;font-weight:800;color:#0d1b4b;text-align:right}.cs{font-size:11px;color:#555;text-align:right}.lb{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;margin-bottom:10px;font-size:11px;color:#1e40af;display:flex;gap:20px}.tb{background:#0d1b4b;color:#fff;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;justify-content:space-between}table{width:100%;border-collapse:collapse}thead tr{background:#0d1b4b;color:#fff}thead th{padding:8px 10px;font-size:11px;font-weight:700;text-align:left}tbody tr:nth-child(even){background:#f0f4ff}tbody td{padding:7px 10px;font-size:12px;border-bottom:1px solid #dbeafe}.ft{border-top:2px solid #bfdbfe;padding-top:10px;margin-top:20px;display:flex;justify-content:space-between}.sl{border-top:1px solid #333;width:130px;margin-top:36px;font-size:11px;padding-top:4px;text-align:center}</style></head><body><div class="pg"><div class="hd"><img src="data:image/png;base64,${LOGO}" style="height:100px;width:auto;max-width:240px"/><div><div class="cn">${CO.name}</div><div class="cs">${CO.a1}<br/>${CO.a2}</div><div class="cs">📞 ${CO.ph} | ✉ ${CO.em}</div></div></div><div class="lb"><span><b>GSTIN:</b> ${CO.gs}</span><span><b>Drug Lic:</b> ${CO.dr}</span></div><div class="tb"><b>SALES ORDER — ${o.orderNo}</b><span>${o.status} | ${o.date}</span></div><p style="margin-bottom:10px"><b>${bt}</b></p><table><thead><tr><th>#</th><th>Product</th><th>Cat</th><th>Pack</th><th>MRP</th><th>Qty</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table>${o.notes?`<div style="background:#f0f4ff;padding:8px 12px;margin-top:10px;font-size:12px"><b>Notes:</b> ${o.notes}</div>`:""}<div class="ft"><div><b>${CO.short}</b><br/><span style="font-size:11px;color:#888">${CO.tg}</span></div><div class="sl">Authorised Signatory</div></div></div></body></html>`;
 }
 
 
@@ -338,7 +338,7 @@ function numToWords(n){
   if(num>0)w+=hw(num);
   return w.trim()+' Rupees Only';
 }
-function iHTML(o,iNo,iDt,gstType){
+function iHTML(o,iNo,iDt,gstType,billToContact,shipToContact){
   const gst=calcGST(o.products,gstType);
   // Calculate totals using rate if available, else mrp
   const subtotal=o.products.reduce((s,p)=>{
@@ -381,11 +381,22 @@ function iHTML(o,iNo,iDt,gstType){
 
   const gstRows=gst.rows.map(r=>`<tr><td style="padding:5px 8px">${r.label}</td><td style="padding:5px 8px;text-align:right">₹${r.base.toFixed(2)}</td><td style="padding:5px 8px;text-align:right">₹${r.tax.toFixed(2)}</td></tr>`).join("");
 
-  const billAddr=o.custType==="store"
-    ?`<b>${o.storeName||""}</b><br/>${o.storeAddress||""}${o.storeGstin?"<br/>GSTIN: "+o.storeGstin:""}`
-    :o.custType==="both"
-    ?`<b>${o.doctorName} / ${o.storeName||""}</b><br/>${o.clinicName||""}<br/>${[o.area,o.city,o.pincode].filter(Boolean).join(", ")}${o.regNo?"<br/>Reg No: "+o.regNo:""}`
-    :`<b>${o.doctorName}</b><br/>${o.clinicName||""}<br/>${o.address||""}<br/>${[o.area,o.city,o.pincode?"Mumbai - "+o.pincode+", Maharashtra":""].filter(Boolean).join(", ")}${o.regNo?"<br/><b>Reg No: "+o.regNo+"</b>":""}`;
+  function fmtContact(contact, ord){
+    if(contact){
+      if(contact.type==="store")
+        return `<b>${contact.storeName||""}</b><br/>${contact.storeAddress||""}${contact.storeGstin?"<br/>GSTIN: "+contact.storeGstin:""}`;
+      else
+        return `<b>${contact.doctorName||""}</b><br/>${contact.clinicName||""}<br/>${contact.address||""}<br/>${[contact.area,contact.city,contact.pincode?"Mumbai - "+contact.pincode+", Maharashtra":""].filter(Boolean).join(", ")}${contact.regNo?"<br/><b>Reg No: "+contact.regNo+"</b>":""}`;
+    }
+    // fallback to order data
+    if(ord.custType==="store")
+      return `<b>${ord.storeName||""}</b><br/>${ord.storeAddress||""}${ord.storeGstin?"<br/>GSTIN: "+ord.storeGstin:""}`;
+    if(ord.custType==="both")
+      return `<b>${ord.doctorName} / ${ord.storeName||""}</b><br/>${ord.clinicName||""}<br/>${[ord.area,ord.city,ord.pincode].filter(Boolean).join(", ")}${ord.regNo?"<br/>Reg No: "+ord.regNo:""}`;
+    return `<b>${ord.doctorName}</b><br/>${ord.clinicName||""}<br/>${ord.address||""}<br/>${[ord.area,ord.city,ord.pincode?"Mumbai - "+ord.pincode+", Maharashtra":""].filter(Boolean).join(", ")}${ord.regNo?"<br/><b>Reg No: "+ord.regNo+"</b>":""}`;
+  }
+  const billAddr = fmtContact(billToContact, o);
+  const shipAddr = shipToContact ? fmtContact(shipToContact, o) : billAddr;
 
   const grandTotal=subtotal+gst.totalTax;
   const amtWords=numToWords(Math.round(grandTotal));
@@ -395,8 +406,8 @@ function iHTML(o,iNo,iDt,gstType){
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Arial,sans-serif;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .pg{width:210mm;margin:0 auto;padding:8mm 10mm}
-.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.logo{height:80px;width:auto}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.logo{height:100px;width:auto}
 .co-info{text-align:right;font-size:11px;color:#333;line-height:1.6}
 .co-name{font-size:14px;font-weight:900;color:#0d1b4b}
 .gst-bar{background:#e8f0fe;border:1px solid #bfdbfe;border-radius:4px;padding:4px 10px;font-size:10px;color:#1e40af;margin-bottom:8px;text-align:center}
@@ -430,7 +441,7 @@ tbody tr:nth-child(even){background:#f8faff}
 </style></head><body><div class="pg">
 
 <div class="hdr">
-  <img class="logo" src="data:image/png;base64,${LOGO}" style="height:80px;width:auto"/>
+  <img src="data:image/png;base64,${LOGO}" style="height:100px;width:auto;max-width:240px"/>
   <div class="co-info">
     <div class="co-name">${CO.name}</div>
     <div>${CO.a1}</div>
@@ -461,7 +472,7 @@ tbody tr:nth-child(even){background:#f8faff}
   </div>
   <div class="addr-box">
     <div class="addr-head">SHIP TO</div>
-    <div class="addr-body">${billAddr}</div>
+    <div class="addr-body">${shipAddr}</div>
   </div>
 </div>
 
@@ -860,7 +871,31 @@ function render(){
             <button class="gst-btn ${s.gstType==="igst"?"gst-on":"gst-off"}" onclick="set({gstType:'igst'})">IGST<br/><span style="font-size:10px;font-weight:500">(Outside Maharashtra)</span></button>
           </div>
         </div>
-        <div class="tw"><div class="th">💊 Items — Edit GST% / MRP / Qty</div>
+        <div style="margin-bottom:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label class="lbl" style="margin-bottom:6px">📋 Bill To</label>
+              <select class="inp" style="font-size:12px" onchange="S.invBillTo=this.value;render()">
+                <option value="order" ${s.invBillTo==="order"?"selected":""}>— From Order —</option>
+                ${S.contacts.filter(ct=>ct.type==="doctor"||ct.type==="both").map(ct=>`<option value="d_${ct._id}" ${s.invBillTo==="d_"+ct._id?"selected":""}>👨‍⚕️ ${ct.doctorName}${ct.clinicName?" ("+ct.clinicName+")":""}</option>`).join("")}
+                ${S.contacts.filter(ct=>ct.type==="store").map(ct=>`<option value="s_${ct._id}" ${s.invBillTo==="s_"+ct._id?"selected":""}>🏪 ${ct.storeName}</option>`).join("")}
+              </select>
+            </div>
+            <div>
+              <label class="lbl" style="margin-bottom:6px">🚚 Ship To</label>
+              <select class="inp" style="font-size:12px" onchange="S.invShipTo=this.value;render()">
+                <option value="order" ${s.invShipTo==="order"?"selected":""}>— Same as Bill To —</option>
+                <option value="bill" ${s.invShipTo==="bill"?"selected":""}>— Same as Bill To (copy) —</option>
+                ${S.contacts.filter(ct=>ct.type==="doctor"||ct.type==="both").map(ct=>`<option value="d_${ct._id}" ${s.invShipTo==="d_"+ct._id?"selected":""}>👨‍⚕️ ${ct.doctorName}${ct.clinicName?" ("+ct.clinicName+")":""}</option>`).join("")}
+                ${S.contacts.filter(ct=>ct.type==="store").map(ct=>`<option value="s_${ct._id}" ${s.invShipTo==="s_"+ct._id?"selected":""}>🏪 ${ct.storeName}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:6px 10px;margin-top:8px;font-size:11px;color:#0369a1">
+            ℹ️ Select different Bill To / Ship To to override the address from the order
+          </div>
+        </div>
+                <div class="tw"><div class="th">💊 Items — Edit GST% / MRP / Qty</div>
           <table><thead><tr>${["Product","Batch","MRP","Rate","Disc%","GST%","Qty","Amount"].map((h,i)=>`<th style="font-size:10px;padding:6px 4px">${h}</th>`).join("")}</tr></thead><tbody>${iRows}</tbody></table>
         </div>
         <div style="background:#f0f7ff;border-radius:10px;padding:12px 16px;margin-bottom:16px;border:1.5px solid #bfdbfe">
@@ -1059,7 +1094,7 @@ function oi(id){
   const o=S.orders.find(x=>x._id===id);if(!o)return;
   S.invOrd={...o,products:o.products.map(p=>({gst:12,disc:0,...p,rate:p.rate||p.mrp||0}))};
   S.invNo="INV-"+String(Date.now()).slice(-6);
-  S.invDate=td();S.inv=true;render();
+  S.invDate=td();S.invBillTo="order";S.invShipTo="order";S.inv=true;render();
 }
 function uip(name,field,val){if(!S.invOrd)return;const p=S.invOrd.products.find(x=>x.name===name);if(p){if(field==="qty")p[field]=parseInt(val)||1;else if(field==="batch"||field==="expiry")p[field]=val;else p[field]=parseFloat(val)||0;}}
 function uipF(el){
@@ -1084,7 +1119,19 @@ function uipF(el){
   }
 }
 function po(id){const o=S.orders.find(x=>x._id===id);if(o)pp(oHTML(o));}
-function pi(){if(S.invOrd)pp(iHTML(S.invOrd,S.invNo,S.invDate,S.gstType));}
+function pi(){
+  if(!S.invOrd)return;
+  // Resolve billTo contact
+  const resolveCt=(val)=>{
+    if(!val||val==="order"||val==="bill")return null;
+    const id=val.slice(2); // remove "d_" or "s_" prefix
+    return S.contacts.find(ct=>ct._id===id)||null;
+  };
+  const billCt=resolveCt(S.invBillTo);
+  const shipVal=S.invShipTo;
+  const shipCt=shipVal==="bill"?billCt:resolveCt(shipVal);
+  pp(iHTML(S.invOrd,S.invNo,S.invDate,S.gstType,billCt,shipCt));
+}
 
 // ===== EVENT DELEGATION for product buttons =====
 // Using data-pname avoids all quote escaping issues with product names
